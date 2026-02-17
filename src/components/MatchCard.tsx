@@ -46,13 +46,18 @@ export default function MatchCard({ game, onClick }: MatchCardProps) {
       <div className="p-4">
         {/* League & Status Header */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[11px] font-medium text-dark-400 uppercase tracking-wider">
               {game.league.shortName}
             </span>
             {game.league.country && (
               <span className="text-[10px] text-dark-500">
                 · {game.league.country}
+              </span>
+            )}
+            {(game.round || game.leg) && (
+              <span className="text-[10px] text-primary-400 bg-primary-500/10 px-1.5 py-0.5 rounded">
+                {game.round}{game.leg ? ` · ${game.leg}` : ""}
               </span>
             )}
           </div>
