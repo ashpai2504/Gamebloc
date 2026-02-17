@@ -1,0 +1,5 @@
+<!-- League logo placeholder - replace with actual league logos -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <rect width="48" height="48" rx="12" fill="#1e293b"/>
+  <text x="24" y="28" text-anchor="middle" fill="#94a3b8" font-family="Arial" font-size="10" font-weight="bold">PL</text>
+</svg>
