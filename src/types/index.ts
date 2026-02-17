@@ -66,6 +66,9 @@ export interface Game {
   startTime: string;
   minute?: number;
   venue?: string;
+  round?: string; // e.g. "Knockout Round Playoffs", "Quarterfinals", "Semifinals", "Final"
+  leg?: string; // e.g. "1st Leg", "2nd Leg"
+  seriesNote?: string; // e.g. "1st Leg" or aggregate score
   messageCount: number;
   activeUsers: number;
 }
@@ -162,8 +165,16 @@ export const API_FOOTBALL_LEAGUE_IDS: Record<string, number> = {
   ucl: 2, // Champions League
 };
 
-// ---------- ESPN Sport Slugs ----------
+// ---------- ESPN Sport Slugs (used for all API calls) ----------
 export const ESPN_SPORT_SLUGS: Record<string, string> = {
+  // Soccer
+  pl: "soccer/eng.1",
+  laliga: "soccer/esp.1",
+  bundesliga: "soccer/ger.1",
+  seriea: "soccer/ita.1",
+  ligue1: "soccer/fra.1",
+  ucl: "soccer/uefa.champions",
+  // NCAA
   ncaa_fb: "football/college-football",
   ncaa_bb: "basketball/mens-college-basketball",
 };

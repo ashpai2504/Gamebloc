@@ -111,7 +111,7 @@ export default function MatchPage() {
 
           <div className="px-6 py-6">
             {/* League */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-dark-400 uppercase tracking-wider">
                   {game.league.name}
@@ -119,6 +119,27 @@ export default function MatchPage() {
               </div>
               <LiveBadge status={game.status} minute={game.minute} />
             </div>
+
+            {/* Round / Leg / Series */}
+            {(game.round || game.leg || game.seriesNote) && (
+              <div className="flex flex-wrap items-center gap-2 mb-5">
+                {game.round && (
+                  <span className="text-[11px] font-medium text-primary-400 bg-primary-500/10 px-2 py-1 rounded-md">
+                    {game.round}
+                  </span>
+                )}
+                {game.leg && (
+                  <span className="text-[11px] text-amber-400 bg-amber-500/10 px-2 py-1 rounded-md">
+                    {game.leg}
+                  </span>
+                )}
+                {game.seriesNote && (
+                  <span className="text-[11px] text-dark-400">
+                    {game.seriesNote}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Teams & Score */}
             <div className="flex items-center justify-between gap-4">

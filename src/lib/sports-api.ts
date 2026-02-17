@@ -1,173 +1,116 @@
 // =============================================
-// Sports API Integration
-// Fetches live/upcoming game data from:
-//   - API-Football (RapidAPI) for soccer
-//   - ESPN public API for NCAA
+// Sports API Integration — ESPN Public API
+// Fetches REAL live/upcoming game data from ESPN
+// for ALL sports. No API key required.
+//
+// Supported leagues:
+//   Soccer: Premier League, La Liga, Bundesliga,
+//           Serie A, Ligue 1, UEFA Champions League
+//   NCAA:   Football, Men's Basketball
 // =============================================
 
 import axios from "axios";
 import {
   Game,
   GameStatus,
-  Team,
   League,
   SportType,
   SOCCER_LEAGUES,
   NCAA_LEAGUES,
-  API_FOOTBALL_LEAGUE_IDS,
+  ESPN_SPORT_SLUGS,
 } from "@/types";
 
-// ---------- API-Football (Soccer) ----------
-
-const footballApi = axios.create({
-  baseURL: "https://v3.football.api-sports.io",
-  headers: {
-    "x-apisports-key": process.env.FOOTBALL_API_KEY || "",
-  },
-});
-
-function mapFootballStatus(status: string, elapsed: number | null): { gameStatus: GameStatus; minute?: number } {
-  const shortStatus = status?.toUpperCase();
-  switch (shortStatus) {
-    case "1H":
-    case "2H":
-    case "ET":
-    case "P":
-    case "LIVE":
-      return { gameStatus: "live", minute: elapsed || undefined };
-    case "HT":
-      return { gameStatus: "halftime", minute: 45 };
-    case "FT":
-    case "AET":
-    case "PEN":
-      return { gameStatus: "finished" };
-    case "NS":
-    case "TBD":
-      return { gameStatus: "scheduled" };
-    case "PST":
-      return { gameStatus: "postponed" };
-    case "CANC":
-    case "ABD":
-    case "AWD":
-    case "WO":
-      return { gameStatus: "cancelled" };
-    default:
-      return { gameStatus: "scheduled" };
-  }
-}
-
-export async function fetchSoccerGames(leagueId: string): Promise<Game[]> {
-  const apiLeagueId = API_FOOTBALL_LEAGUE_IDS[leagueId];
-  if (!apiLeagueId) return [];
-
-  const league = SOCCER_LEAGUES.find((l) => l.id === leagueId);
-  if (!league) return [];
-
-  // If no API key, return demo data
-  if (!process.env.FOOTBALL_API_KEY) {
-    return generateDemoSoccerGames(league);
-  }
-
-  try {
-    const today = new Date().toISOString().split("T")[0];
-    // Fetch games for today and the next 3 days
-    const dates = [];
-    for (let i = 0; i < 4; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
-      dates.push(d.toISOString().split("T")[0]);
-    }
-
-    const responses = await Promise.all(
-      dates.map((date) =>
-        footballApi.get("/fixtures", {
-          params: { league: apiLeagueId, season: 2025, date },
-        })
-      )
-    );
-
-    const allFixtures = responses.flatMap((res) => res.data?.response || []);
-
-    return allFixtures.map((fixture: any) => {
-      const { gameStatus, minute } = mapFootballStatus(
-        fixture.fixture.status.short,
-        fixture.fixture.status.elapsed
-      );
-
-      return {
-        id: `soccer_${fixture.fixture.id}`,
-        externalId: String(fixture.fixture.id),
-        sport: "soccer" as SportType,
-        league,
-        homeTeam: {
-          id: String(fixture.teams.home.id),
-          name: fixture.teams.home.name,
-          shortName: fixture.teams.home.name.split(" ").pop() || fixture.teams.home.name,
-          logo: fixture.teams.home.logo,
-          score: fixture.goals.home,
-        },
-        awayTeam: {
-          id: String(fixture.teams.away.id),
-          name: fixture.teams.away.name,
-          shortName: fixture.teams.away.name.split(" ").pop() || fixture.teams.away.name,
-          logo: fixture.teams.away.logo,
-          score: fixture.goals.away,
-        },
-        status: gameStatus,
-        startTime: fixture.fixture.date,
-        minute,
-        venue: fixture.fixture.venue?.name,
-        messageCount: 0,
-        activeUsers: 0,
-      };
-    });
-  } catch (error) {
-    console.error(`Error fetching soccer games for ${leagueId}:`, error);
-    return generateDemoSoccerGames(league);
-  }
-}
-
-// ---------- ESPN API (NCAA) ----------
+// ---------- ESPN API Client ----------
 
 const espnApi = axios.create({
   baseURL: "https://site.api.espn.com/apis/site/v2/sports",
+  timeout: 15000,
 });
 
-function mapEspnStatus(status: string): GameStatus {
-  switch (status?.toLowerCase()) {
+// ---------- Status Mapping ----------
+
+function mapEspnStatus(state: string): GameStatus {
+  switch (state?.toLowerCase()) {
     case "in":
       return "live";
     case "pre":
       return "scheduled";
     case "post":
       return "finished";
-    case "postponed":
-      return "postponed";
-    case "canceled":
-    case "cancelled":
-      return "cancelled";
     default:
       return "scheduled";
   }
 }
 
-export async function fetchNcaaGames(leagueId: string): Promise<Game[]> {
-  const league = NCAA_LEAGUES.find((l) => l.id === leagueId);
-  if (!league) return [];
+function getMinute(competition: any, sport: SportType): number | undefined {
+  const statusType = competition?.status?.type;
+  const state = statusType?.state;
 
-  const sportSlug =
-    leagueId === "ncaa_fb"
-      ? "football/college-football"
-      : "basketball/mens-college-basketball";
+  if (state !== "in") return undefined;
+
+  if (sport === "soccer") {
+    const clock = competition?.status?.displayClock;
+    if (clock) {
+      const num = parseInt(clock.replace(/[^0-9]/g, ""));
+      if (!isNaN(num)) return num;
+    }
+    if (statusType?.description === "Halftime") return 45;
+    return undefined;
+  }
+
+  return undefined;
+}
+
+function getSoccerHalftime(competition: any): boolean {
+  const desc = competition?.status?.type?.description;
+  return desc === "Halftime";
+}
+
+// ---------- Unified ESPN Fetcher ----------
+
+async function fetchEspnGames(
+  leagueId: string,
+  league: League,
+  sport: SportType
+): Promise<Game[]> {
+  const slug = ESPN_SPORT_SLUGS[leagueId];
+  if (!slug) return [];
 
   try {
-    const response = await espnApi.get(`/${sportSlug}/scoreboard`, {
-      params: { limit: 50 },
-    });
-
+    const params: Record<string, any> = { limit: 100 };
+    const response = await espnApi.get(`/${slug}/scoreboard`, { params });
     const events = response.data?.events || [];
 
-    return events.map((event: any) => {
+    // For soccer, also fetch the next few days of fixtures
+    let upcomingEvents: any[] = [];
+    if (sport === "soccer") {
+      const today = new Date();
+      const futurePromises = [];
+      for (let dayOffset = 1; dayOffset <= 5; dayOffset++) {
+        const futureDate = new Date(today);
+        futureDate.setDate(futureDate.getDate() + dayOffset);
+        const dateStr = futureDate.toISOString().split("T")[0].replace(/-/g, "");
+        futurePromises.push(
+          espnApi
+            .get(`/${slug}/scoreboard`, { params: { dates: dateStr, limit: 50 } })
+            .then((res) => res.data?.events || [])
+            .catch(() => [])
+        );
+      }
+      const futureResults = await Promise.all(futurePromises);
+      upcomingEvents = futureResults.flat();
+    }
+
+    // Combine and deduplicate
+    const allEvents = [...events, ...upcomingEvents];
+    const seen = new Set<string>();
+    const uniqueEvents = allEvents.filter((ev: any) => {
+      if (seen.has(ev.id)) return false;
+      seen.add(ev.id);
+      return true;
+    });
+
+    return uniqueEvents.map((event: any) => {
       const competition = event.competitions?.[0];
       const homeCompetitor = competition?.competitors?.find(
         (c: any) => c.homeAway === "home"
@@ -176,43 +119,115 @@ export async function fetchNcaaGames(leagueId: string): Promise<Game[]> {
         (c: any) => c.homeAway === "away"
       );
 
-      const status = mapEspnStatus(competition?.status?.type?.state);
-      const minute =
-        status === "live"
-          ? parseInt(competition?.status?.displayClock || "0")
-          : undefined;
+      // Determine game status
+      const stateStr = competition?.status?.type?.state;
+      let status = mapEspnStatus(stateStr);
+
+      if (sport === "soccer" && getSoccerHalftime(competition)) {
+        status = "halftime";
+      }
+
+      const description = competition?.status?.type?.description?.toLowerCase();
+      if (description === "postponed") status = "postponed";
+      if (description === "canceled" || description === "cancelled")
+        status = "cancelled";
+
+      const minute = getMinute(competition, sport);
+
+      const homeScore = homeCompetitor?.score
+        ? parseInt(homeCompetitor.score)
+        : undefined;
+      const awayScore = awayCompetitor?.score
+        ? parseInt(awayCompetitor.score)
+        : undefined;
+
+      const showScore =
+        status === "live" || status === "halftime" || status === "finished";
+
+      // Extract round/leg info (UCL knockout stages, etc.)
+      const notes = competition?.notes;
+      const series = competition?.series;
+      const leg = competition?.leg;
+      let roundName: string | undefined;
+      let legStr: string | undefined;
+      let seriesNote: string | undefined;
+
+      if (series?.title) {
+        roundName = series.title;
+      }
+      if (leg?.displayValue) {
+        legStr = leg.displayValue;
+      }
+      if (notes?.[0]?.headline) {
+        seriesNote = notes[0].headline;
+      }
+
+      const seasonSlug = event.season?.slug;
+      if (
+        seasonSlug &&
+        !roundName &&
+        seasonSlug !== "regular-season" &&
+        seasonSlug !== "preseason"
+      ) {
+        roundName = seasonSlug
+          .split("-")
+          .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ");
+      }
+
+      const idPrefix = sport === "soccer" ? "soccer" : "ncaa";
 
       return {
-        id: `ncaa_${event.id}`,
+        id: `${idPrefix}_${event.id}`,
         externalId: String(event.id),
-        sport: league.sport,
+        sport,
         league,
         homeTeam: {
-          id: String(homeCompetitor?.id || ""),
+          id: String(homeCompetitor?.id || homeCompetitor?.team?.id || ""),
           name: homeCompetitor?.team?.displayName || "TBD",
           shortName: homeCompetitor?.team?.abbreviation || "TBD",
           logo: homeCompetitor?.team?.logo || "",
-          score: homeCompetitor?.score ? parseInt(homeCompetitor.score) : undefined,
+          score: showScore ? homeScore : undefined,
         },
         awayTeam: {
-          id: String(awayCompetitor?.id || ""),
+          id: String(awayCompetitor?.id || awayCompetitor?.team?.id || ""),
           name: awayCompetitor?.team?.displayName || "TBD",
           shortName: awayCompetitor?.team?.abbreviation || "TBD",
           logo: awayCompetitor?.team?.logo || "",
-          score: awayCompetitor?.score ? parseInt(awayCompetitor.score) : undefined,
+          score: showScore ? awayScore : undefined,
         },
         status,
         startTime: event.date,
         minute,
-        venue: competition?.venue?.fullName,
+        venue: competition?.venue?.fullName || competition?.venue?.displayName,
+        round: roundName,
+        leg: legStr,
+        seriesNote,
         messageCount: 0,
         activeUsers: 0,
-      };
+      } as Game;
     });
-  } catch (error) {
-    console.error(`Error fetching NCAA games for ${leagueId}:`, error);
-    return generateDemoNcaaGames(league);
+  } catch (error: any) {
+    console.error(
+      `[ESPN API] Error fetching ${leagueId}:`,
+      error?.message || error
+    );
+    return [];
   }
+}
+
+// ---------- Public Fetch Functions ----------
+
+export async function fetchSoccerGames(leagueId: string): Promise<Game[]> {
+  const league = SOCCER_LEAGUES.find((l) => l.id === leagueId);
+  if (!league) return [];
+  return fetchEspnGames(leagueId, league, "soccer");
+}
+
+export async function fetchNcaaGames(leagueId: string): Promise<Game[]> {
+  const league = NCAA_LEAGUES.find((l) => l.id === leagueId);
+  if (!league) return [];
+  return fetchEspnGames(leagueId, league, league.sport);
 }
 
 // ---------- Fetch All Games ----------
@@ -228,14 +243,14 @@ export async function fetchAllGames(
     ? NCAA_LEAGUES.filter((l) => leagueFilter.includes(l.id)).map((l) => l.id)
     : NCAA_LEAGUES.map((l) => l.id);
 
-  const [soccerGames, ncaaGames] = await Promise.all([
-    Promise.all(soccerLeagueIds.map(fetchSoccerGames)),
-    Promise.all(ncaaLeagueIds.map(fetchNcaaGames)),
-  ]);
+  const allPromises = [
+    ...soccerLeagueIds.map((id) => fetchSoccerGames(id)),
+    ...ncaaLeagueIds.map((id) => fetchNcaaGames(id)),
+  ];
 
-  const allGames = [...soccerGames.flat(), ...ncaaGames.flat()];
+  const results = await Promise.all(allPromises);
+  const allGames = results.flat();
 
-  // Sort: live first, then scheduled by start time, then finished
   return allGames.sort((a, b) => {
     const statusOrder: Record<GameStatus, number> = {
       live: 0,
@@ -251,209 +266,4 @@ export async function fetchAllGames(
 
     return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
   });
-}
-
-// =============================================
-// DEMO DATA (when no API key is configured)
-// =============================================
-
-function generateDemoSoccerGames(league: League): Game[] {
-  const now = new Date();
-
-  const soccerTeams: Record<string, Array<[string, string]>> = {
-    pl: [
-      ["Arsenal", "ARS"],
-      ["Manchester City", "MCI"],
-      ["Liverpool", "LIV"],
-      ["Chelsea", "CHE"],
-      ["Manchester United", "MUN"],
-      ["Tottenham", "TOT"],
-      ["Newcastle United", "NEW"],
-      ["Aston Villa", "AVL"],
-      ["Brighton", "BHA"],
-      ["West Ham", "WHU"],
-    ],
-    laliga: [
-      ["Real Madrid", "RMA"],
-      ["Barcelona", "BAR"],
-      ["Atletico Madrid", "ATM"],
-      ["Real Sociedad", "RSO"],
-      ["Athletic Bilbao", "ATH"],
-      ["Villarreal", "VIL"],
-      ["Real Betis", "BET"],
-      ["Sevilla", "SEV"],
-    ],
-    bundesliga: [
-      ["Bayern Munich", "BAY"],
-      ["Borussia Dortmund", "BVB"],
-      ["RB Leipzig", "RBL"],
-      ["Bayer Leverkusen", "B04"],
-      ["Stuttgart", "VFB"],
-      ["Frankfurt", "SGE"],
-    ],
-    seriea: [
-      ["Inter Milan", "INT"],
-      ["AC Milan", "ACM"],
-      ["Juventus", "JUV"],
-      ["Napoli", "NAP"],
-      ["Roma", "ROM"],
-      ["Lazio", "LAZ"],
-      ["Atalanta", "ATA"],
-      ["Fiorentina", "FIO"],
-    ],
-    ligue1: [
-      ["PSG", "PSG"],
-      ["Marseille", "OM"],
-      ["Monaco", "ASM"],
-      ["Lyon", "OL"],
-      ["Lille", "LOC"],
-      ["Nice", "OGC"],
-    ],
-    ucl: [
-      ["Real Madrid", "RMA"],
-      ["Manchester City", "MCI"],
-      ["Bayern Munich", "BAY"],
-      ["Barcelona", "BAR"],
-      ["PSG", "PSG"],
-      ["Inter Milan", "INT"],
-      ["Arsenal", "ARS"],
-      ["Borussia Dortmund", "BVB"],
-    ],
-  };
-
-  const teams = soccerTeams[league.id] || soccerTeams["pl"];
-  const games: Game[] = [];
-
-  for (let i = 0; i < teams.length - 1; i += 2) {
-    const [homeName, homeShort] = teams[i];
-    const [awayName, awayShort] = teams[i + 1];
-
-    const gameTime = new Date(now);
-    const hourOffset = Math.floor(i / 2) * 3 - 3;
-    gameTime.setHours(gameTime.getHours() + hourOffset);
-
-    const isLive = hourOffset >= -2 && hourOffset <= 0;
-    const isFinished = hourOffset < -2;
-    const status: GameStatus = isLive
-      ? "live"
-      : isFinished
-      ? "finished"
-      : "scheduled";
-
-    games.push({
-      id: `soccer_demo_${league.id}_${i}`,
-      externalId: `demo_${league.id}_${i}`,
-      sport: "soccer",
-      league,
-      homeTeam: {
-        id: `team_${homeShort.toLowerCase()}`,
-        name: homeName,
-        shortName: homeShort,
-        logo: `https://api.dicebear.com/8.x/initials/svg?seed=${homeShort}&backgroundColor=1e293b&textColor=ffffff`,
-        score: isLive || isFinished ? Math.floor(Math.random() * 4) : undefined,
-      },
-      awayTeam: {
-        id: `team_${awayShort.toLowerCase()}`,
-        name: awayName,
-        shortName: awayShort,
-        logo: `https://api.dicebear.com/8.x/initials/svg?seed=${awayShort}&backgroundColor=1e293b&textColor=ffffff`,
-        score: isLive || isFinished ? Math.floor(Math.random() * 3) : undefined,
-      },
-      status,
-      startTime: gameTime.toISOString(),
-      minute: isLive ? Math.floor(Math.random() * 90) + 1 : undefined,
-      venue: `${homeName} Stadium`,
-      messageCount: Math.floor(Math.random() * 500),
-      activeUsers: isLive ? Math.floor(Math.random() * 200) + 10 : Math.floor(Math.random() * 20),
-    });
-  }
-
-  return games;
-}
-
-function generateDemoNcaaGames(league: League): Game[] {
-  const now = new Date();
-
-  const ncaaFbTeams: Array<[string, string]> = [
-    ["Alabama", "ALA"],
-    ["Georgia", "UGA"],
-    ["Ohio State", "OSU"],
-    ["Michigan", "MICH"],
-    ["Texas", "TEX"],
-    ["USC", "USC"],
-    ["Clemson", "CLEM"],
-    ["Oregon", "ORE"],
-  ];
-
-  const ncaaBbTeams: Array<[string, string]> = [
-    ["Duke", "DUKE"],
-    ["North Carolina", "UNC"],
-    ["Kansas", "KU"],
-    ["Kentucky", "UK"],
-    ["Gonzaga", "GONZ"],
-    ["UCLA", "UCLA"],
-    ["UConn", "CONN"],
-    ["Purdue", "PUR"],
-  ];
-
-  const teams = league.id === "ncaa_fb" ? ncaaFbTeams : ncaaBbTeams;
-  const games: Game[] = [];
-
-  for (let i = 0; i < teams.length - 1; i += 2) {
-    const [homeName, homeShort] = teams[i];
-    const [awayName, awayShort] = teams[i + 1];
-
-    const gameTime = new Date(now);
-    const hourOffset = Math.floor(i / 2) * 4 - 2;
-    gameTime.setHours(gameTime.getHours() + hourOffset);
-
-    const isLive = hourOffset >= -2 && hourOffset <= 0;
-    const isFinished = hourOffset < -2;
-    const status: GameStatus = isLive
-      ? "live"
-      : isFinished
-      ? "finished"
-      : "scheduled";
-
-    const isFb = league.id === "ncaa_fb";
-
-    games.push({
-      id: `ncaa_demo_${league.id}_${i}`,
-      externalId: `demo_${league.id}_${i}`,
-      sport: league.sport,
-      league,
-      homeTeam: {
-        id: `team_${homeShort.toLowerCase()}`,
-        name: homeName,
-        shortName: homeShort,
-        logo: `https://api.dicebear.com/8.x/initials/svg?seed=${homeShort}&backgroundColor=312e81&textColor=ffffff`,
-        score:
-          isLive || isFinished
-            ? isFb
-              ? Math.floor(Math.random() * 6) * 7
-              : Math.floor(Math.random() * 40) + 50
-            : undefined,
-      },
-      awayTeam: {
-        id: `team_${awayShort.toLowerCase()}`,
-        name: awayName,
-        shortName: awayShort,
-        logo: `https://api.dicebear.com/8.x/initials/svg?seed=${awayShort}&backgroundColor=312e81&textColor=ffffff`,
-        score:
-          isLive || isFinished
-            ? isFb
-              ? Math.floor(Math.random() * 5) * 7
-              : Math.floor(Math.random() * 40) + 45
-            : undefined,
-      },
-      status,
-      startTime: gameTime.toISOString(),
-      minute: isLive ? Math.floor(Math.random() * 60) + 1 : undefined,
-      venue: `${homeName} Arena`,
-      messageCount: Math.floor(Math.random() * 300),
-      activeUsers: isLive ? Math.floor(Math.random() * 150) + 5 : Math.floor(Math.random() * 10),
-    });
-  }
-
-  return games;
 }
