@@ -1,0 +1,221 @@
+// =============================================
+// Gamebloc - Core Type Definitions
+// =============================================
+
+// ---------- User ----------
+export interface User {
+  _id: string;
+  username: string;
+  email: string;
+  password?: string;
+  avatar?: string;
+  provider: "credentials" | "google";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserPublic {
+  _id: string;
+  username: string;
+  avatar?: string;
+}
+
+// ---------- Message / Chat ----------
+export interface Message {
+  _id: string;
+  gameId: string;
+  user: UserPublic;
+  content: string;
+  type: "text" | "reaction";
+  createdAt: string;
+}
+
+export interface ChatRoom {
+  gameId: string;
+  activeUsers: number;
+  messages: Message[];
+}
+
+// ---------- Sports / Games ----------
+export type SportType = "soccer" | "ncaa_football" | "ncaa_basketball";
+
+export type GameStatus =
+  | "scheduled"
+  | "live"
+  | "halftime"
+  | "finished"
+  | "postponed"
+  | "cancelled";
+
+export interface Team {
+  id: string;
+  name: string;
+  shortName: string;
+  logo: string;
+  score?: number;
+}
+
+export interface Game {
+  id: string;
+  externalId: string;
+  sport: SportType;
+  league: League;
+  homeTeam: Team;
+  awayTeam: Team;
+  status: GameStatus;
+  startTime: string;
+  minute?: number;
+  venue?: string;
+  messageCount: number;
+  activeUsers: number;
+}
+
+export interface League {
+  id: string;
+  name: string;
+  shortName: string;
+  logo: string;
+  country: string;
+  sport: SportType;
+}
+
+// ---------- Predefined Leagues ----------
+export const SOCCER_LEAGUES: League[] = [
+  {
+    id: "pl",
+    name: "Premier League",
+    shortName: "PL",
+    logo: "/leagues/premier-league.png",
+    country: "England",
+    sport: "soccer",
+  },
+  {
+    id: "laliga",
+    name: "La Liga",
+    shortName: "LaLiga",
+    logo: "/leagues/la-liga.png",
+    country: "Spain",
+    sport: "soccer",
+  },
+  {
+    id: "bundesliga",
+    name: "Bundesliga",
+    shortName: "BL",
+    logo: "/leagues/bundesliga.png",
+    country: "Germany",
+    sport: "soccer",
+  },
+  {
+    id: "seriea",
+    name: "Serie A",
+    shortName: "SA",
+    logo: "/leagues/serie-a.png",
+    country: "Italy",
+    sport: "soccer",
+  },
+  {
+    id: "ligue1",
+    name: "Ligue 1",
+    shortName: "L1",
+    logo: "/leagues/ligue-1.png",
+    country: "France",
+    sport: "soccer",
+  },
+  {
+    id: "ucl",
+    name: "UEFA Champions League",
+    shortName: "UCL",
+    logo: "/leagues/ucl.png",
+    country: "Europe",
+    sport: "soccer",
+  },
+];
+
+export const NCAA_LEAGUES: League[] = [
+  {
+    id: "ncaa_fb",
+    name: "NCAA Football",
+    shortName: "NCAAF",
+    logo: "/leagues/ncaa-football.png",
+    country: "USA",
+    sport: "ncaa_football",
+  },
+  {
+    id: "ncaa_bb",
+    name: "NCAA Basketball",
+    shortName: "NCAAB",
+    logo: "/leagues/ncaa-basketball.png",
+    country: "USA",
+    sport: "ncaa_basketball",
+  },
+];
+
+export const ALL_LEAGUES: League[] = [...SOCCER_LEAGUES, ...NCAA_LEAGUES];
+
+// ---------- API Football League IDs (RapidAPI) ----------
+export const API_FOOTBALL_LEAGUE_IDS: Record<string, number> = {
+  pl: 39, // Premier League
+  laliga: 140, // La Liga
+  bundesliga: 78, // Bundesliga
+  seriea: 135, // Serie A
+  ligue1: 61, // Ligue 1
+  ucl: 2, // Champions League
+};
+
+// ---------- ESPN Sport Slugs ----------
+export const ESPN_SPORT_SLUGS: Record<string, string> = {
+  ncaa_fb: "football/college-football",
+  ncaa_bb: "basketball/mens-college-basketball",
+};
+
+// ---------- Socket Events ----------
+export const SOCKET_EVENTS = {
+  JOIN_ROOM: "join_room",
+  LEAVE_ROOM: "leave_room",
+  SEND_MESSAGE: "send_message",
+  NEW_MESSAGE: "new_message",
+  ROOM_USERS: "room_users",
+  USER_JOINED: "user_joined",
+  USER_LEFT: "user_left",
+  TYPING: "typing",
+  STOP_TYPING: "stop_typing",
+  USER_TYPING: "user_typing",
+  GAME_UPDATE: "game_update",
+  ERROR: "error",
+} as const;
+
+// ---------- Component Props ----------
+export interface MatchCardProps {
+  game: Game;
+  onClick?: (game: Game) => void;
+}
+
+export interface ChatWindowProps {
+  gameId: string;
+  game: Game;
+}
+
+export interface LeagueFilterProps {
+  selectedLeagues: string[];
+  onToggleLeague: (leagueId: string) => void;
+  selectedSport: SportType | "all";
+  onChangeSport: (sport: SportType | "all") => void;
+}
+
+// ---------- API Responses ----------
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+}
+
+export interface GamesResponse {
+  games: Game[];
+  lastUpdated: string;
+}
+
+export interface MessagesResponse {
+  messages: Message[];
+  hasMore: boolean;
+  total: number;
+}

@@ -1,0 +1,135 @@
+"use client";
+
+import { useGames } from "@/hooks/useGames";
+import { useGameStore } from "@/lib/store";
+import MatchList from "@/components/MatchList";
+import LeagueFilter from "@/components/LeagueFilter";
+import { RefreshCw, Zap, TrendingUp, Globe } from "lucide-react";
+import { format, parseISO } from "date-fns";
+
+export default function HomePage() {
+  const {
+    selectedSport,
+    selectedLeagues,
+    setSport,
+    toggleLeague,
+  } = useGameStore();
+
+  const {
+    games,
+    liveGames,
+    scheduledGames,
+    finishedGames,
+    isLoading,
+    error,
+    lastUpdated,
+    refresh,
+  } = useGames({
+    selectedLeagues: selectedLeagues.length > 0 ? selectedLeagues : undefined,
+    selectedSport,
+    refreshInterval: 60000,
+  });
+
+  return (
+    <div className="min-h-screen bg-dark-950 bg-grid-pattern">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary-950/20 via-transparent to-transparent" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 relative">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                Live{" "}
+                <span className="bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+                  Matches
+                </span>
+              </h1>
+              <p className="text-dark-400 text-sm">
+                Click on any match to join the live chat and share your thoughts
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              {/* Stats */}
+              <div className="hidden sm:flex items-center gap-4">
+                {liveGames.length > 0 && (
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <Zap className="w-3.5 h-3.5 text-red-500" />
+                    <span className="text-dark-300">
+                      {liveGames.length} live
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5 text-xs">
+                  <Globe className="w-3.5 h-3.5 text-primary-400" />
+                  <span className="text-dark-300">
+                    {games.length} matches
+                  </span>
+                </div>
+              </div>
+
+              {/* Last updated & refresh */}
+              <div className="flex items-center gap-2">
+                {lastUpdated && (
+                  <span className="text-[11px] text-dark-500">
+                    Updated{" "}
+                    {format(parseISO(lastUpdated), "HH:mm")}
+                  </span>
+                )}
+                <button
+                  onClick={refresh}
+                  disabled={isLoading}
+                  className="p-2 rounded-lg bg-dark-800/50 border border-dark-700/50 text-dark-400 hover:text-white hover:border-dark-600/50 transition-all disabled:opacity-50"
+                  title="Refresh games"
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+        <LeagueFilter
+          selectedLeagues={selectedLeagues}
+          onToggleLeague={toggleLeague}
+          selectedSport={selectedSport}
+          onChangeSport={setSport}
+        />
+      </div>
+
+      {/* Match Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <MatchList
+          games={games}
+          liveGames={liveGames}
+          scheduledGames={scheduledGames}
+          finishedGames={finishedGames}
+          isLoading={isLoading}
+          error={error}
+        />
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t border-dark-800/50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-dark-500 text-xs">
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>
+                Soccer data powered by API-Football · NCAA data powered by ESPN
+              </span>
+            </div>
+            <p className="text-xs text-dark-600">
+              © {new Date().getFullYear()} Gamebloc. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
