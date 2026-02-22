@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
 import { useGames } from "@/hooks/useGames";
 import { useGameStore } from "@/lib/store";
 import MatchList from "@/components/MatchList";
 import LeagueFilter from "@/components/LeagueFilter";
+import TeamSearch from "@/components/TeamSearch";
 import { RefreshCw, Zap, TrendingUp, Globe } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
@@ -11,6 +13,7 @@ export default function HomePage() {
   const {
     selectedSport,
     selectedLeagues,
+    teamSearch,
     setSport,
     toggleLeague,
   } = useGameStore();
@@ -29,6 +32,24 @@ export default function HomePage() {
     selectedSport,
     refreshInterval: 60000,
   });
+
+  const filterByTeam = useMemo(() => {
+    const q = teamSearch.trim().toLowerCase();
+    if (!q) return null;
+    return (list: typeof games) =>
+      list.filter(
+        (g) =>
+          g.homeTeam.name.toLowerCase().includes(q) ||
+          g.awayTeam.name.toLowerCase().includes(q) ||
+          g.homeTeam.shortName.toLowerCase().includes(q) ||
+          g.awayTeam.shortName.toLowerCase().includes(q)
+      );
+  }, [teamSearch]);
+
+  const filteredGames = filterByTeam ? filterByTeam(games) : games;
+  const filteredLive = filterByTeam ? filterByTeam(liveGames) : liveGames;
+  const filteredScheduled = filterByTeam ? filterByTeam(scheduledGames) : scheduledGames;
+  const filteredFinished = filterByTeam ? filterByTeam(finishedGames) : finishedGames;
 
   return (
     <div className="min-h-screen bg-dark-950 bg-grid-pattern">
@@ -99,16 +120,17 @@ export default function HomePage() {
           onToggleLeague={toggleLeague}
           selectedSport={selectedSport}
           onChangeSport={setSport}
+          rightSlot={<TeamSearch />}
         />
       </div>
 
       {/* Match Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <MatchList
-          games={games}
-          liveGames={liveGames}
-          scheduledGames={scheduledGames}
-          finishedGames={finishedGames}
+          games={filteredGames}
+          liveGames={filteredLive}
+          scheduledGames={filteredScheduled}
+          finishedGames={filteredFinished}
           isLoading={isLoading}
           error={error}
         />
