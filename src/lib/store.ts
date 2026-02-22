@@ -8,9 +8,11 @@ interface GameStore {
   selectedSport: SportType | "all";
   selectedLeagues: string[];
   selectedGame: Game | null;
+  teamSearch: string;
   setSport: (sport: SportType | "all") => void;
   toggleLeague: (leagueId: string) => void;
   setSelectedGame: (game: Game | null) => void;
+  setTeamSearch: (query: string) => void;
   clearFilters: () => void;
 }
 
@@ -18,6 +20,7 @@ export const useGameStore = create<GameStore>((set) => ({
   selectedSport: "all",
   selectedLeagues: [],
   selectedGame: null,
+  teamSearch: "",
   setSport: (sport) =>
     set({ selectedSport: sport, selectedLeagues: [] }),
   toggleLeague: (leagueId) =>
@@ -27,7 +30,8 @@ export const useGameStore = create<GameStore>((set) => ({
         : [...state.selectedLeagues, leagueId],
     })),
   setSelectedGame: (game) => set({ selectedGame: game }),
-  clearFilters: () => set({ selectedSport: "all", selectedLeagues: [] }),
+  setTeamSearch: (query) => set({ teamSearch: query }),
+  clearFilters: () => set({ selectedSport: "all", selectedLeagues: [], teamSearch: "" }),
 }));
 
 // ---------- Chat Store ----------

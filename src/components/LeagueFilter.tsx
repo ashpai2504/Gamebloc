@@ -8,6 +8,7 @@ interface LeagueFilterProps {
   onToggleLeague: (leagueId: string) => void;
   selectedSport: SportType | "all";
   onChangeSport: (sport: SportType | "all") => void;
+  rightSlot?: React.ReactNode;
 }
 
 const sportTabs: { id: SportType | "all"; label: string; icon: React.ReactNode }[] = [
@@ -38,6 +39,7 @@ export default function LeagueFilter({
   onToggleLeague,
   selectedSport,
   onChangeSport,
+  rightSlot,
 }: LeagueFilterProps) {
   const getVisibleLeagues = () => {
     switch (selectedSport) {
@@ -54,23 +56,26 @@ export default function LeagueFilter({
   const visibleLeagues = getVisibleLeagues();
 
   return (
-    <div className="space-y-4">
-      {/* Sport Tabs */}
-      <div className="flex items-center gap-1 bg-dark-800/50 rounded-xl p-1 border border-dark-700/50">
-        {sportTabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => onChangeSport(tab.id)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-              selectedSport === tab.id
-                ? "bg-primary-600 text-white shadow-md shadow-primary-600/25"
-                : "text-dark-400 hover:text-dark-200 hover:bg-dark-700/50"
-            }`}
-          >
-            {tab.icon}
-            <span className="hidden sm:inline">{tab.label}</span>
-          </button>
-        ))}
+    <div className="space-y-3">
+      {/* Sport Tabs + Search Slot */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 bg-dark-800/50 rounded-xl p-1 border border-dark-700/50 flex-1">
+          {sportTabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => onChangeSport(tab.id)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                selectedSport === tab.id
+                  ? "bg-primary-600 text-white shadow-md shadow-primary-600/25"
+                  : "text-dark-400 hover:text-dark-200 hover:bg-dark-700/50"
+              }`}
+            >
+              {tab.icon}
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+        {rightSlot && <div className="shrink-0">{rightSlot}</div>}
       </div>
 
       {/* League Chips */}
