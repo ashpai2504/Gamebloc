@@ -30,7 +30,7 @@ export default function HomePage() {
   } = useGames({
     selectedLeagues: selectedLeagues.length > 0 ? selectedLeagues : undefined,
     selectedSport,
-    refreshInterval: 60000,
+    refreshInterval: 5 * 60 * 1000, // match server cache (5 min)
   });
 
   const filterByTeam = useMemo(() => {

@@ -34,7 +34,7 @@ export default function MatchPage() {
       .catch(console.error)
       .finally(() => setIsLoading(false));
 
-    // Refresh game data every 30 seconds
+    // Refresh game data every 5 minutes (matches server cache)
     const interval = setInterval(() => {
       fetch("/api/games")
         .then((res) => res.json())
@@ -49,7 +49,7 @@ export default function MatchPage() {
           }
         })
         .catch(console.error);
-    }, 30000);
+    }, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [gameId]);

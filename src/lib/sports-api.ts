@@ -81,25 +81,25 @@ async function fetchEspnGames(
     const response = await espnApi.get(`/${slug}/scoreboard`, { params });
     const events = response.data?.events || [];
 
-    // For soccer, also fetch the next few days of fixtures
-    let upcomingEvents: any[] = [];
-    if (sport === "soccer") {
-      const today = new Date();
-      const futurePromises = [];
-      for (let dayOffset = 1; dayOffset <= 5; dayOffset++) {
-        const futureDate = new Date(today);
-        futureDate.setDate(futureDate.getDate() + dayOffset);
-        const dateStr = futureDate.toISOString().split("T")[0].replace(/-/g, "");
-        futurePromises.push(
-          espnApi
-            .get(`/${slug}/scoreboard`, { params: { dates: dateStr, limit: 50 } })
-            .then((res) => res.data?.events || [])
-            .catch(() => [])
-        );
-      }
-      const futureResults = await Promise.all(futurePromises);
-      upcomingEvents = futureResults.flat();
+    // Build date offsets: past 14 days + next 5 days
+    const today = new Date();
+    const dateOffsets: number[] = [];
+    for (let d = -14; d <= 5; d++) {
+      if (d !== 0) dateOffsets.push(d); // skip today — already fetched above
     }
+
+    const datePromises = dateOffsets.map((dayOffset) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() + dayOffset);
+      const dateStr = date.toISOString().split("T")[0].replace(/-/g, "");
+      return espnApi
+        .get(`/${slug}/scoreboard`, { params: { dates: dateStr, limit: 50 } })
+        .then((res) => res.data?.events || [])
+        .catch(() => []);
+    });
+
+    const dateResults = await Promise.all(datePromises);
+    const upcomingEvents = dateResults.flat();
 
     // Combine and deduplicate
     const allEvents = [...events, ...upcomingEvents];

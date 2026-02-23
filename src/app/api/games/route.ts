@@ -3,9 +3,9 @@ import { fetchAllGames } from "@/lib/sports-api";
 
 export const dynamic = "force-dynamic";
 
-// Cache games for 60 seconds in memory
+// Cache games for 5 minutes in memory (we now fetch 14 past + 5 future days)
 let cachedGames: { data: any; timestamp: number } | null = null;
-const CACHE_DURATION = 60 * 1000; // 60 seconds
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export async function GET(request: NextRequest) {
   try {
