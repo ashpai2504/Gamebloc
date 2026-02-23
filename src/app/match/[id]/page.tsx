@@ -7,6 +7,7 @@ import ChatWindow from "@/components/ChatWindow";
 import LiveBadge from "@/components/LiveBadge";
 import { ArrowLeft, ExternalLink, MapPin, Calendar, Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import MatchStats from "@/components/MatchStats";
 
 export default function MatchPage() {
   const params = useParams();
@@ -87,7 +88,7 @@ export default function MatchPage() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Panel - Match Info */}
-      <div className="lg:w-[420px] xl:w-[480px] flex-shrink-0 bg-dark-900 border-r border-dark-700/50">
+      <div className="lg:w-[420px] xl:w-[480px] flex-shrink-0 bg-dark-900 border-r border-dark-700/50 overflow-y-auto lg:h-screen">
         {/* Back Button */}
         <div className="px-4 py-3 border-b border-dark-700/50">
           <button
@@ -246,6 +247,9 @@ export default function MatchPage() {
             </div>
           </div>
         </div>
+
+        {/* Match Statistics */}
+        <MatchStats game={game} />
 
         {/* Chat instructions */}
         <div className="px-6 py-4 border-t border-dark-700/50">
