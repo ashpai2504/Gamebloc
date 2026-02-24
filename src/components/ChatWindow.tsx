@@ -7,6 +7,7 @@ import { Game, Message, SOCKET_EVENTS } from "@/types";
 import { useSocket } from "@/hooks/useSocket";
 import { useChatStore } from "@/lib/store";
 import ChatMessage from "./ChatMessage";
+import UserProfileModal from "./UserProfileModal";
 import {
   Send,
   Users,
@@ -44,6 +45,7 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
   const [inputValue, setInputValue] = useState("");
   const [showReactions, setShowReactions] = useState(false);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [profileModalUserId, setProfileModalUserId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -215,6 +217,7 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
               key={msg._id}
               message={msg}
               isOwnMessage={user?.id === msg.user._id}
+              onClickAvatar={(uid) => setProfileModalUserId(uid)}
             />
           ))
         )}
@@ -307,6 +310,13 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
           </button>
         )}
       </div>
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        userId={profileModalUserId || ""}
+        isOpen={!!profileModalUserId}
+        onClose={() => setProfileModalUserId(null)}
+      />
     </div>
   );
 }

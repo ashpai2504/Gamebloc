@@ -3,13 +3,23 @@
 // =============================================
 
 // ---------- User ----------
+export interface FavoriteTeam {
+  teamId: string;
+  name: string;
+  shortName: string;
+  logo: string;
+}
+
 export interface User {
   _id: string;
   username: string;
   email: string;
   password?: string;
   avatar?: string;
+  bio?: string;
   provider: "credentials" | "google";
+  favoriteTeams: FavoriteTeam[];
+  hiddenActivityTeams: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -18,6 +28,28 @@ export interface UserPublic {
   _id: string;
   username: string;
   avatar?: string;
+  bio?: string;
+  favoriteTeams?: FavoriteTeam[];
+}
+
+export interface TeamActivity {
+  teamName: string;
+  teamLogo: string;
+  count: number;
+  hidden: boolean;
+}
+
+export interface UserProfile {
+  _id: string;
+  username: string;
+  email?: string; // only for own profile
+  avatar?: string;
+  bio?: string;
+  provider?: string; // only for own profile
+  favoriteTeams: FavoriteTeam[];
+  hiddenActivityTeams: string[];
+  teamActivity: TeamActivity[];
+  joinedAt: string;
 }
 
 // ---------- Message / Chat ----------
