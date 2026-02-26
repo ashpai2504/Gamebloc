@@ -198,6 +198,97 @@ const OtpSchema = new Schema<IOtp>({
   },
 });
 
+// ---------- DM Conversation Model ----------
+export interface IDMConversation extends Document {
+  key: string; // sorted userId1_userId2 for uniqueness
+  participants: mongoose.Types.ObjectId[];
+  lastMessage?: string;
+  lastMessageAt: Date;
+  lastSenderId?: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const DMConversationSchema = new Schema<IDMConversation>(
+  {
+    key: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    participants: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
+    lastMessage: {
+      type: String,
+      default: "",
+    },
+    lastMessageAt: {
+      type: Date,
+      default: Date.now,
+    },
+    lastSenderId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  },
+  { timestamps: true }
+);
+
+DMConversationSchema.index({ participants: 1 });
+DMConversationSchema.index({ lastMessageAt: -1 });
+
+// ---------- DM Message Model ----------
+export interface IDMMessage extends Document {
+  conversationId: mongoose.Types.ObjectId;
+  senderId: mongoose.Types.ObjectId;
+  senderUsername: string;
+  senderAvatar?: string;
+  content: string;
+  readBy: mongoose.Types.ObjectId[];
+  createdAt: Date;
+}
+
+const DMMessageSchema = new Schema<IDMMessage>(
+  {
+    conversationId: {
+      type: Schema.Types.ObjectId,
+      ref: "DMConversation",
+      required: true,
+      index: true,
+    },
+    senderId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    senderUsername: {
+      type: String,
+      required: true,
+    },
+    senderAvatar: {
+      type: String,
+      default: "",
+    },
+    content: {
+      type: String,
+      required: true,
+      maxlength: 1000,
+    },
+    readBy: {
+      type: [Schema.Types.ObjectId],
+      default: [],
+    },
+  },
+  { timestamps: true }
+);
+
+DMMessageSchema.index({ conversationId: 1, createdAt: -1 });
+
 // ---------- Export Models ----------
 export const UserModel: Model<IUser> =
   mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
@@ -211,3 +302,11 @@ export const CachedGameModel: Model<ICachedGame> =
 
 export const OtpModel: Model<IOtp> =
   mongoose.models.Otp || mongoose.model<IOtp>("Otp", OtpSchema);
+
+export const DMConversationModel: Model<IDMConversation> =
+  mongoose.models.DMConversation ||
+  mongoose.model<IDMConversation>("DMConversation", DMConversationSchema);
+
+export const DMMessageModel: Model<IDMMessage> =
+  mongoose.models.DMMessage ||
+  mongoose.model<IDMMessage>("DMMessage", DMMessageSchema);

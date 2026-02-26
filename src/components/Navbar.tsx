@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,10 @@ import {
   X,
   ChevronDown,
   Settings,
+  MessageCircle,
 } from "lucide-react";
+import { useDMStore } from "@/lib/store";
+import DMPanel from "./DMPanel";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -22,6 +25,29 @@ export default function Navbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const user = session?.user as any;
+  const { isDMOpen, openDM, closeDM, totalUnread, setTotalUnread } = useDMStore();
+
+  // Poll for unread DM count every 30s
+  useEffect(() => {
+    if (!session) return;
+    const fetchUnread = () => {
+      fetch("/api/dm/conversations")
+        .then((r) => r.json())
+        .then((res) => {
+          if (res.success) {
+            const total = res.data.reduce(
+              (s: number, c: any) => s + (c.unreadCount || 0),
+              0
+            );
+            setTotalUnread(total);
+          }
+        })
+        .catch(() => {});
+    };
+    fetchUnread();
+    const id = setInterval(fetchUnread, 30_000);
+    return () => clearInterval(id);
+  }, [session, setTotalUnread]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-900/95 backdrop-blur-md border-b border-dark-700/50">
@@ -57,7 +83,23 @@ export default function Navbar() {
             {status === "loading" ? (
               <div className="w-8 h-8 rounded-full bg-dark-700 animate-pulse" />
             ) : session ? (
-              <div className="relative">
+              <>
+                {/* DM Button */}
+                <button
+                  onClick={() => openDM()}
+                  className="relative p-2 rounded-lg text-dark-400 hover:text-white hover:bg-dark-800 border border-transparent hover:border-dark-600/50 transition-all"
+                  title="Direct Messages"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  {totalUnread > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-primary-600 flex items-center justify-center text-[9px] font-bold text-white px-0.5 border border-dark-900">
+                      {totalUnread > 9 ? "9+" : totalUnread}
+                    </span>
+                  )}
+                </button>
+
+                {/* Profile Dropdown */}
+                <div className="relative">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-dark-800 hover:bg-dark-700 border border-dark-600/50 transition-all"
@@ -116,6 +158,7 @@ export default function Navbar() {
                   </>
                 )}
               </div>
+              </>
             ) : (
               <button
                 onClick={() => router.push("/auth")}
@@ -155,6 +198,9 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* DM Panel */}
+      <DMPanel isOpen={isDMOpen} onClose={closeDM} />
     </nav>
   );
 }

@@ -154,6 +154,63 @@ app.prepare().then(() => {
     });
   });
 
+  // ---------- DM (Direct Messages) Real-time ----------
+
+  // Store which socket is for which user (userId -> socketId)
+  const userSockets = new Map(); // userId -> Set of socketIds
+
+  io.on("connection", (socket) => {
+    // Track userId for this socket (set when joining DM rooms)
+    let connectedUserId = null;
+
+    socket.on("register_user", ({ userId }) => {
+      if (!userId) return;
+      connectedUserId = userId;
+      if (!userSockets.has(userId)) userSockets.set(userId, new Set());
+      userSockets.get(userId).add(socket.id);
+    });
+
+    socket.on("join_dm_room", ({ conversationId, userId }) => {
+      if (conversationId) {
+        socket.join(`dm_${conversationId}`);
+      }
+      if (userId) {
+        connectedUserId = userId;
+        if (!userSockets.has(userId)) userSockets.set(userId, new Set());
+        userSockets.get(userId).add(socket.id);
+      }
+    });
+
+    socket.on("leave_dm_room", ({ conversationId }) => {
+      if (conversationId) {
+        socket.leave(`dm_${conversationId}`);
+      }
+    });
+
+    socket.on("send_dm", ({ conversationId, message }) => {
+      if (!conversationId || !message) return;
+      // Emit to all OTHER participants in the DM room (not the sender)
+      socket.to(`dm_${conversationId}`).emit("new_dm", message);
+    });
+
+    socket.on("dm_typing", ({ conversationId, username, isTyping }) => {
+      if (!conversationId) return;
+      socket.to(`dm_${conversationId}`).emit("dm_user_typing", {
+        username,
+        isTyping,
+      });
+    });
+
+    socket.on("disconnect", () => {
+      if (connectedUserId && userSockets.has(connectedUserId)) {
+        userSockets.get(connectedUserId).delete(socket.id);
+        if (userSockets.get(connectedUserId).size === 0) {
+          userSockets.delete(connectedUserId);
+        }
+      }
+    });
+  });
+
   // ---------- Start Server ----------
   httpServer.listen(port, () => {
     console.log(`

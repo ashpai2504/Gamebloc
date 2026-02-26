@@ -74,3 +74,25 @@ export const useChatStore = create<ChatStore>((set) => ({
   clearChat: () =>
     set({ messages: [], activeUsers: 0, typingUsers: [] }),
 }));
+
+// ---------- DM Store ----------
+interface DMStore {
+  isDMOpen: boolean;
+  targetDMUserId: string | null; // userId to open a specific conversation with
+  totalUnread: number;
+  openDM: (targetUserId?: string) => void;
+  closeDM: () => void;
+  clearTargetDMUser: () => void;
+  setTotalUnread: (count: number) => void;
+}
+
+export const useDMStore = create<DMStore>((set) => ({
+  isDMOpen: false,
+  targetDMUserId: null,
+  totalUnread: 0,
+  openDM: (targetUserId?: string) =>
+    set({ isDMOpen: true, targetDMUserId: targetUserId || null }),
+  closeDM: () => set({ isDMOpen: false, targetDMUserId: null }),
+  clearTargetDMUser: () => set({ targetDMUserId: null }),
+  setTotalUnread: (count: number) => set({ totalUnread: count }),
+}));

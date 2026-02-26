@@ -245,6 +245,32 @@ export interface LeagueFilterProps {
   onChangeSport: (sport: SportType | "all") => void;
 }
 
+// ---------- Direct Messages ----------
+export interface DMParticipant {
+  _id: string;
+  username: string;
+  avatar?: string;
+}
+
+export interface DMMessage {
+  _id: string;
+  conversationId: string;
+  sender: DMParticipant;
+  content: string;
+  createdAt: string;
+  readBy: string[];
+}
+
+export interface DMConversation {
+  _id: string;
+  participants: DMParticipant[]; // other participants (not current user)
+  lastMessage?: string;
+  lastMessageAt?: string;
+  lastSenderId?: string;
+  unreadCount: number;
+  createdAt: string;
+}
+
 // ---------- API Responses ----------
 export interface ApiResponse<T> {
   success: boolean;
