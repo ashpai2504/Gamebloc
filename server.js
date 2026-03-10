@@ -100,8 +100,7 @@ app.prepare().then(() => {
     socket.on("send_message", (data) => {
       const { gameId, message } = data;
 
-      // Broadcast to all users in the room (including sender)
-      io.to(gameId).emit("new_message", {
+      const emitData = {
         _id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         gameId,
         user: {
@@ -112,7 +111,14 @@ app.prepare().then(() => {
         content: message.content,
         type: message.type || "text",
         createdAt: new Date().toISOString(),
-      });
+      };
+
+      if (message.replyTo) {
+        emitData.replyTo = message.replyTo;
+      }
+
+      // Broadcast to all users in the room (including sender)
+      io.to(gameId).emit("new_message", emitData);
     });
 
     // ---------- Typing indicators ----------

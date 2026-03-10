@@ -2,14 +2,16 @@
 
 import { Message } from "@/types";
 import { format, parseISO } from "date-fns";
+import { Reply } from "lucide-react";
 
 interface ChatMessageProps {
   message: Message;
   isOwnMessage: boolean;
   onClickAvatar?: (userId: string) => void;
+  onReply?: (message: Message) => void;
 }
 
-export default function ChatMessage({ message, isOwnMessage, onClickAvatar }: ChatMessageProps) {
+export default function ChatMessage({ message, isOwnMessage, onClickAvatar, onReply }: ChatMessageProps) {
   const time = format(parseISO(message.createdAt), "HH:mm");
 
   if (message.type === "reaction") {
@@ -26,7 +28,7 @@ export default function ChatMessage({ message, isOwnMessage, onClickAvatar }: Ch
 
   return (
     <div
-      className={`flex gap-2.5 animate-slide-up ${
+      className={`group flex gap-2.5 animate-slide-up ${
         isOwnMessage ? "flex-row-reverse" : ""
       }`}
     >
@@ -61,14 +63,53 @@ export default function ChatMessage({ message, isOwnMessage, onClickAvatar }: Ch
             {message.user.username}
           </button>
         )}
-        <div
-          className={`px-3 py-2 rounded-2xl text-sm leading-relaxed break-words ${
-            isOwnMessage
-              ? "bg-primary-600 text-white rounded-br-md"
-              : "bg-dark-700/80 text-dark-100 rounded-bl-md"
-          }`}
-        >
-          {message.content}
+
+        {/* Reply preview */}
+        {message.replyTo && (
+          <div
+            className={`flex items-start gap-1.5 mb-1 px-2.5 py-1.5 rounded-lg border-l-2 border-primary-500/60 bg-dark-700/40 max-w-full ${
+              isOwnMessage ? "ml-auto" : ""
+            }`}
+          >
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-semibold text-primary-400 truncate">
+                {message.replyTo.username}
+              </p>
+              <p className="text-[11px] text-dark-400 truncate leading-snug">
+                {message.replyTo.content}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-1 group">
+          {isOwnMessage && onReply && (
+            <button
+              onClick={() => onReply(message)}
+              className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-dark-500 hover:text-primary-400 hover:bg-dark-700/50 transition-all"
+              title="Reply"
+            >
+              <Reply className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <div
+            className={`px-3 py-2 rounded-2xl text-sm leading-relaxed break-words ${
+              isOwnMessage
+                ? "bg-primary-600 text-white rounded-br-md"
+                : "bg-dark-700/80 text-dark-100 rounded-bl-md"
+            }`}
+          >
+            {message.content}
+          </div>
+          {!isOwnMessage && onReply && (
+            <button
+              onClick={() => onReply(message)}
+              className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-dark-500 hover:text-primary-400 hover:bg-dark-700/50 transition-all"
+              title="Reply"
+            >
+              <Reply className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
         <p
           className={`text-[10px] text-dark-500 mt-0.5 px-1 ${

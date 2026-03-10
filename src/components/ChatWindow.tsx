@@ -15,6 +15,8 @@ import {
   Lock,
   ArrowDown,
   Loader2,
+  X,
+  Reply,
 } from "lucide-react";
 
 const QUICK_REACTIONS = ["⚽", "🔥", "😮", "👏", "😂", "💪", "❤️", "😤"];
@@ -46,6 +48,7 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
   const [showReactions, setShowReactions] = useState(false);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [profileModalUserId, setProfileModalUserId] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -128,16 +131,29 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
   const handleSend = () => {
     if (!inputValue.trim() || !user) return;
 
-    sendMessage(inputValue.trim());
+    const replyData = replyingTo
+      ? {
+          _id: replyingTo._id,
+          content: replyingTo.content,
+          username: replyingTo.user.username,
+        }
+      : undefined;
+
+    sendMessage(inputValue.trim(), "text", replyData);
 
     // Also persist to database
     fetch(`/api/messages/${gameId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: inputValue.trim(), type: "text" }),
+      body: JSON.stringify({
+        content: inputValue.trim(),
+        type: "text",
+        replyTo: replyData,
+      }),
     }).catch(console.error);
 
     setInputValue("");
+    setReplyingTo(null);
     stopTyping();
     inputRef.current?.focus();
   };
@@ -218,6 +234,10 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
               message={msg}
               isOwnMessage={user?.id === msg.user._id}
               onClickAvatar={(uid) => setProfileModalUserId(uid)}
+              onReply={(m) => {
+                setReplyingTo(m);
+                inputRef.current?.focus();
+              }}
             />
           ))
         )}
@@ -269,7 +289,28 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
       {/* Input Area */}
       <div className="px-4 py-3 border-t border-dark-700/50 bg-dark-850">
         {user ? (
-          <div className="flex items-center gap-2">
+          <>
+            {/* Reply preview bar */}
+            {replyingTo && (
+              <div className="flex items-center gap-2 mb-2 px-3 py-2 bg-dark-800 rounded-lg border-l-2 border-primary-500 animate-fade-in">
+                <Reply className="w-3.5 h-3.5 text-primary-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold text-primary-400">
+                    {replyingTo.user.username}
+                  </p>
+                  <p className="text-xs text-dark-400 truncate">
+                    {replyingTo.content}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setReplyingTo(null)}
+                  className="p-0.5 rounded text-dark-500 hover:text-dark-300 transition-colors flex-shrink-0"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
             <button
               onClick={() => setShowReactions(!showReactions)}
               className={`p-2 rounded-lg transition-colors ${
@@ -298,6 +339,7 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
               <Send className="w-4 h-4" />
             </button>
           </div>
+          </>
         ) : (
           <button
             onClick={() => router.push("/auth")}

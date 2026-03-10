@@ -17,10 +17,11 @@ import {
   Check,
   CheckCheck,
   Edit3,
+  Reply,
 } from "lucide-react";
 import { format, parseISO, isToday, isYesterday } from "date-fns";
 import { useDMStore } from "@/lib/store";
-import { DMConversation, DMMessage } from "@/types";
+import { DMConversation, DMMessage, ReplyInfo } from "@/types";
 
 interface DMPanelProps {
   isOpen: boolean;
@@ -75,6 +76,7 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
   const [isLoadingMsgs, setIsLoadingMsgs] = useState(false);
   const [typingUser, setTypingUser] = useState<string | null>(null);
   const [initializingTarget, setInitializingTarget] = useState(false);
+  const [dmReplyingTo, setDmReplyingTo] = useState<DMMessage | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -284,6 +286,14 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
     const content = input.trim();
     setInput("");
 
+    const replyData: ReplyInfo | undefined = dmReplyingTo
+      ? {
+          _id: dmReplyingTo._id,
+          content: dmReplyingTo.content,
+          username: dmReplyingTo.sender.username,
+        }
+      : undefined;
+
     const optimistic: DMMessage = {
       _id: `opt_${Date.now()}`,
       conversationId: activeConv._id,
@@ -293,16 +303,18 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
         avatar: currentUser.avatar || currentUser.image,
       },
       content,
+      replyTo: replyData,
       createdAt: new Date().toISOString(),
       readBy: [userId],
     };
 
     setMessages((prev) => [...prev, optimistic]);
+    setDmReplyingTo(null);
 
     fetch(`/api/dm/${activeConv._id}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, replyTo: replyData }),
     })
       .then((r) => r.json())
       .then((result) => {
@@ -373,6 +385,7 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
     setActiveConv(null);
     setMessages([]);
     setTypingUser(null);
+    setDmReplyingTo(null);
     fetchConversations();
   };
 
@@ -650,14 +663,58 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
                               isOwn ? "items-end" : "items-start"
                             }`}
                           >
-                            <div
-                              className={`px-3.5 py-2.5 text-sm leading-relaxed break-words ${bubbleRadius} ${
-                                isOwn
-                                  ? "bg-primary-600 text-white"
-                                  : "bg-dark-700/90 text-dark-100"
-                              } ${msg._id.startsWith("opt_") ? "opacity-70" : ""}`}
-                            >
-                              {msg.content}
+                            {/* Reply preview inside bubble */}
+                            {msg.replyTo && (
+                              <div
+                                className={`flex items-start gap-1.5 mb-1 px-2.5 py-1.5 rounded-lg border-l-2 border-primary-500/60 bg-dark-700/40 max-w-full ${
+                                  isOwn ? "ml-auto" : ""
+                                }`}
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-[10px] font-semibold text-primary-400 truncate">
+                                    {msg.replyTo.username}
+                                  </p>
+                                  <p className="text-[11px] text-dark-400 truncate leading-snug">
+                                    {msg.replyTo.content}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-1 group">
+                              {isOwn && (
+                                <button
+                                  onClick={() => {
+                                    setDmReplyingTo(msg);
+                                    inputRef.current?.focus();
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-dark-500 hover:text-primary-400 hover:bg-dark-700/50 transition-all"
+                                  title="Reply"
+                                >
+                                  <Reply className="w-3 h-3" />
+                                </button>
+                              )}
+                              <div
+                                className={`px-3.5 py-2.5 text-sm leading-relaxed break-words ${bubbleRadius} ${
+                                  isOwn
+                                    ? "bg-primary-600 text-white"
+                                    : "bg-dark-700/90 text-dark-100"
+                                } ${msg._id.startsWith("opt_") ? "opacity-70" : ""}`}
+                              >
+                                {msg.content}
+                              </div>
+                              {!isOwn && (
+                                <button
+                                  onClick={() => {
+                                    setDmReplyingTo(msg);
+                                    inputRef.current?.focus();
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-dark-500 hover:text-primary-400 hover:bg-dark-700/50 transition-all"
+                                  title="Reply"
+                                >
+                                  <Reply className="w-3 h-3" />
+                                </button>
+                              )}
                             </div>
 
                             {/* Meta: time + read receipt (only last in group) */}
@@ -710,6 +767,26 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
 
                 {/* Input */}
                 <div className="px-4 py-3.5 border-t border-dark-700/40 bg-dark-900">
+                  {/* DM Reply preview bar */}
+                  {dmReplyingTo && (
+                    <div className="flex items-center gap-2 mb-2 px-3 py-2 bg-dark-800 rounded-lg border-l-2 border-primary-500 animate-fade-in">
+                      <Reply className="w-3.5 h-3.5 text-primary-400 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-semibold text-primary-400">
+                          {dmReplyingTo.sender.username}
+                        </p>
+                        <p className="text-xs text-dark-400 truncate">
+                          {dmReplyingTo.content}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setDmReplyingTo(null)}
+                        className="p-0.5 rounded text-dark-500 hover:text-dark-300 transition-colors flex-shrink-0"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2.5 bg-dark-800 rounded-full border border-dark-700/50 pl-4 pr-2 py-2 focus-within:border-primary-500/50 focus-within:ring-1 focus-within:ring-primary-500/20 transition-all">
                     <input
                       ref={inputRef}

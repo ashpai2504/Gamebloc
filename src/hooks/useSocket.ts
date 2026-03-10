@@ -84,10 +84,10 @@ export function useSocket({
   }, [gameId, user?.id]);
 
   const sendMessage = useCallback(
-    (content: string, type: "text" | "reaction" = "text") => {
+    (content: string, type: "text" | "reaction" = "text", replyTo?: { _id: string; content: string; username: string }) => {
       if (!socketRef.current || !user) return;
 
-      socketRef.current.emit(SOCKET_EVENTS.SEND_MESSAGE, {
+      const data: any = {
         gameId,
         message: {
           userId: user.id,
@@ -96,7 +96,13 @@ export function useSocket({
           content,
           type,
         },
-      });
+      };
+
+      if (replyTo) {
+        data.message.replyTo = replyTo;
+      }
+
+      socketRef.current.emit(SOCKET_EVENTS.SEND_MESSAGE, data);
     },
     [gameId, user]
   );
