@@ -87,6 +87,11 @@ export interface IMessage extends Document {
   userAvatar?: string;
   content: string;
   type: "text" | "reaction";
+  replyTo?: {
+    _id: mongoose.Types.ObjectId;
+    content: string;
+    username: string;
+  };
   createdAt: Date;
 }
 
@@ -119,6 +124,11 @@ const MessageSchema = new Schema<IMessage>(
       type: String,
       enum: ["text", "reaction"],
       default: "text",
+    },
+    replyTo: {
+      _id: { type: Schema.Types.ObjectId },
+      content: { type: String },
+      username: { type: String },
     },
   },
   { timestamps: true }
@@ -249,6 +259,11 @@ export interface IDMMessage extends Document {
   senderUsername: string;
   senderAvatar?: string;
   content: string;
+  replyTo?: {
+    _id: mongoose.Types.ObjectId;
+    content: string;
+    username: string;
+  };
   readBy: mongoose.Types.ObjectId[];
   createdAt: Date;
 }
@@ -278,6 +293,11 @@ const DMMessageSchema = new Schema<IDMMessage>(
       type: String,
       required: true,
       maxlength: 1000,
+    },
+    replyTo: {
+      _id: { type: Schema.Types.ObjectId },
+      content: { type: String },
+      username: { type: String },
     },
     readBy: {
       type: [Schema.Types.ObjectId],

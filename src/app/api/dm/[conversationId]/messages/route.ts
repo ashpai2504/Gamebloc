@@ -77,6 +77,13 @@ export async function GET(
             avatar: msg.senderAvatar || undefined,
           },
           content: msg.content,
+          replyTo: (msg as any).replyTo?._id
+            ? {
+                _id: (msg as any).replyTo._id.toString(),
+                content: (msg as any).replyTo.content,
+                username: (msg as any).replyTo.username,
+              }
+            : undefined,
           createdAt: msg.createdAt.toISOString(),
           readBy: msg.readBy.map((id) => id.toString()),
         })),
@@ -105,7 +112,7 @@ export async function POST(
 
     const userId = (session.user as any).id;
     const { conversationId } = params;
-    const { content } = await request.json();
+    const { content, replyTo } = await request.json();
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json(
@@ -137,14 +144,24 @@ export async function POST(
 
     const user = session.user as any;
 
-    const message = await DMMessageModel.create({
+    const createData: any = {
       conversationId: new mongoose.Types.ObjectId(conversationId),
       senderId: new mongoose.Types.ObjectId(userId),
       senderUsername: user.username || user.name || "User",
       senderAvatar: user.avatar || user.image || "",
       content: content.trim(),
       readBy: [new mongoose.Types.ObjectId(userId)],
-    });
+    };
+
+    if (replyTo && replyTo._id) {
+      createData.replyTo = {
+        _id: replyTo._id,
+        content: replyTo.content,
+        username: replyTo.username,
+      };
+    }
+
+    const message = await DMMessageModel.create(createData);
 
     // Update conversation preview
     await DMConversationModel.findByIdAndUpdate(conversationId, {
@@ -164,6 +181,13 @@ export async function POST(
           avatar: message.senderAvatar || undefined,
         },
         content: message.content,
+        replyTo: message.replyTo?._id
+          ? {
+              _id: message.replyTo._id.toString(),
+              content: message.replyTo.content,
+              username: message.replyTo.username,
+            }
+          : undefined,
         createdAt: message.createdAt.toISOString(),
         readBy: message.readBy.map((id) => id.toString()),
       },

@@ -49,6 +49,13 @@ export async function GET(
           },
           content: msg.content,
           type: msg.type,
+          replyTo: msg.replyTo?._id
+            ? {
+                _id: msg.replyTo._id.toString(),
+                content: msg.replyTo.content,
+                username: msg.replyTo.username,
+              }
+            : undefined,
           createdAt: msg.createdAt.toISOString(),
         })),
         hasMore: total > (before ? messages.length : page * limit),
@@ -81,7 +88,7 @@ export async function POST(
 
     const { gameId } = params;
     const body = await request.json();
-    const { content, type = "text" } = body;
+    const { content, type = "text", replyTo } = body;
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json(
@@ -101,14 +108,24 @@ export async function POST(
 
     const user = session.user as any;
 
-    const message = await MessageModel.create({
+    const createData: any = {
       gameId,
       userId: user.id,
       username: user.username || user.name,
       userAvatar: user.avatar || user.image,
       content: content.trim(),
       type,
-    });
+    };
+
+    if (replyTo && replyTo._id) {
+      createData.replyTo = {
+        _id: replyTo._id,
+        content: replyTo.content,
+        username: replyTo.username,
+      };
+    }
+
+    const message = await MessageModel.create(createData);
 
     return NextResponse.json({
       success: true,
@@ -122,6 +139,13 @@ export async function POST(
         },
         content: message.content,
         type: message.type,
+        replyTo: message.replyTo?._id
+          ? {
+              _id: message.replyTo._id.toString(),
+              content: message.replyTo.content,
+              username: message.replyTo.username,
+            }
+          : undefined,
         createdAt: message.createdAt.toISOString(),
       },
     });

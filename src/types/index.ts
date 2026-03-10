@@ -53,12 +53,19 @@ export interface UserProfile {
 }
 
 // ---------- Message / Chat ----------
+export interface ReplyInfo {
+  _id: string;
+  content: string;
+  username: string;
+}
+
 export interface Message {
   _id: string;
   gameId: string;
   user: UserPublic;
   content: string;
   type: "text" | "reaction";
+  replyTo?: ReplyInfo;
   createdAt: string;
 }
 
@@ -257,6 +264,7 @@ export interface DMMessage {
   conversationId: string;
   sender: DMParticipant;
   content: string;
+  replyTo?: ReplyInfo;
   createdAt: string;
   readBy: string[];
 }
