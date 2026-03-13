@@ -8,6 +8,7 @@ export interface FavoriteTeam {
   name: string;
   shortName: string;
   logo: string;
+  sport?: SportType;
 }
 
 export interface User {

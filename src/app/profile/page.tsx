@@ -34,7 +34,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [allTeams, setAllTeams] = useState<
-    { teamId: string; name: string; shortName: string; logo: string }[]
+    { teamId: string; name: string; shortName: string; logo: string; sport: string }[]
   >([]);
 
   // Editable fields
@@ -102,17 +102,18 @@ export default function ProfilePage() {
         if (result.success) {
           const teamMap = new Map<
             string,
-            { teamId: string; name: string; shortName: string; logo: string }
+            { teamId: string; name: string; shortName: string; logo: string; sport: string }
           >();
           for (const game of result.data.games) {
             for (const side of ["homeTeam", "awayTeam"] as const) {
               const t = game[side];
-              if (t && t.name && !teamMap.has(t.id)) {
+              if (t && t.name && t.name !== "TBD" && !teamMap.has(t.id)) {
                 teamMap.set(t.id, {
                   teamId: t.id,
                   name: t.name,
                   shortName: t.shortName,
                   logo: t.logo,
+                  sport: game.sport,
                 });
               }
             }

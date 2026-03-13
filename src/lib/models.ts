@@ -63,6 +63,7 @@ const UserSchema = new Schema<IUser>(
           name: String,
           shortName: String,
           logo: String,
+          sport: String,
         },
       ],
       default: [],
