@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Gamepad2,
   User,
@@ -21,6 +21,7 @@ import DMPanel from "./DMPanel";
 export default function Navbar() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -161,7 +162,11 @@ export default function Navbar() {
               </>
             ) : (
               <button
-                onClick={() => router.push("/auth")}
+                onClick={() =>
+                  router.push(
+                    `/auth?callbackUrl=${encodeURIComponent(pathname || "/")}`
+                  )
+                }
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-500 text-white text-sm font-medium transition-all hover:shadow-lg hover:shadow-primary-600/25"
               >
                 <User className="w-4 h-4" />

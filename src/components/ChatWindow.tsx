@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Game, Message, SOCKET_EVENTS } from "@/types";
 import { useSocket } from "@/hooks/useSocket";
 import { useChatStore } from "@/lib/store";
@@ -29,6 +29,7 @@ interface ChatWindowProps {
 export default function ChatWindow({ gameId, game }: ChatWindowProps) {
   const { data: session } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
 
   const {
     messages,
@@ -342,7 +343,11 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
           </>
         ) : (
           <button
-            onClick={() => router.push("/auth")}
+            onClick={() =>
+              router.push(
+                `/auth?callbackUrl=${encodeURIComponent(pathname || "/")}`
+              )
+            }
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-white hover:border-primary-500/50 transition-all group"
           >
             <Lock className="w-4 h-4 text-dark-500 group-hover:text-primary-400 transition-colors" />

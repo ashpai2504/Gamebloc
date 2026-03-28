@@ -102,6 +102,17 @@ export const authOptions: NextAuthOptions = {
       : []),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      try {
+        const next = new URL(url);
+        const base = new URL(baseUrl);
+        if (next.origin === base.origin) return url;
+      } catch {
+        return baseUrl;
+      }
+      return baseUrl;
+    },
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         await dbConnect();

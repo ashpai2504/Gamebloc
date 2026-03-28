@@ -22,9 +22,13 @@ app.prepare().then(() => {
   });
 
   // ---------- Socket.io Setup ----------
+  // In development, allow any browser origin (localhost vs 127.0.0.1, custom port).
+  // In production, restrict to NEXT_PUBLIC_APP_URL.
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+      origin: dev
+        ? true
+        : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
       methods: ["GET", "POST"],
     },
     pingTimeout: 60000,
