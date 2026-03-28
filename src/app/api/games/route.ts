@@ -5,25 +5,29 @@ export const dynamic = "force-dynamic";
 
 type CachedEntry = { data: any; timestamp: number };
 
-// Cache responses in memory by league filter key
 const responseCache = new Map<string, CachedEntry>();
 const inFlightRequests = new Map<string, Promise<any>>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-function getCacheKey(leagues?: string[]) {
-  if (!leagues || leagues.length === 0) return "all";
-  return `leagues:${[...leagues].sort().join(",")}`;
+function getCacheKey(leagues: string[] | undefined, quick: boolean) {
+  const base =
+    !leagues || leagues.length === 0
+      ? "all"
+      : `leagues:${[...leagues].sort().join(",")}`;
+  return quick ? `${base}:quick` : base;
 }
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const leagues = searchParams.get("leagues")?.split(",").filter(Boolean);
-    const cacheKey = getCacheKey(leagues);
+    const quick =
+      searchParams.get("quick") === "1" ||
+      searchParams.get("quick") === "true";
 
+    const cacheKey = getCacheKey(leagues, quick);
     const now = Date.now();
 
-    // Check cache for filtered + unfiltered requests
     const cached = responseCache.get(cacheKey);
     if (cached && now - cached.timestamp < CACHE_DURATION) {
       return NextResponse.json({
@@ -32,21 +36,20 @@ export async function GET(request: NextRequest) {
           games: cached.data,
           lastUpdated: new Date(cached.timestamp).toISOString(),
           cached: true,
+          quick,
         },
       });
     }
 
-    // Deduplicate concurrent requests for the same cache key
     let requestPromise = inFlightRequests.get(cacheKey);
     if (!requestPromise) {
-      requestPromise = fetchAllGames(leagues || undefined);
+      requestPromise = fetchAllGames(leagues || undefined, { quick });
       inFlightRequests.set(cacheKey, requestPromise);
     }
 
     const games = await requestPromise;
     inFlightRequests.delete(cacheKey);
 
-    // Update cache for this key
     responseCache.set(cacheKey, { data: games, timestamp: now });
 
     return NextResponse.json({
@@ -55,12 +58,16 @@ export async function GET(request: NextRequest) {
         games,
         lastUpdated: new Date().toISOString(),
         cached: false,
+        quick,
       },
     });
   } catch (error) {
     const { searchParams } = new URL(request.url);
     const leagues = searchParams.get("leagues")?.split(",").filter(Boolean);
-    inFlightRequests.delete(getCacheKey(leagues));
+    const quick =
+      searchParams.get("quick") === "1" ||
+      searchParams.get("quick") === "true";
+    inFlightRequests.delete(getCacheKey(leagues, quick));
 
     console.error("Error in /api/games:", error);
     return NextResponse.json(
