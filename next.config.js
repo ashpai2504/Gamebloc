@@ -24,13 +24,8 @@ const nextConfig = {
       },
     ],
   },
-  webpack: (config) => {
-    config.externals.push({
-      "utf-8-validate": "commonjs utf-8-validate",
-      bufferutil: "commonjs bufferutil",
-    });
-    return config;
-  },
+  // Keep optional native ws deps external in server builds (works with Turbopack).
+  serverExternalPackages: ["utf-8-validate", "bufferutil"],
 };
 
 module.exports = nextConfig;

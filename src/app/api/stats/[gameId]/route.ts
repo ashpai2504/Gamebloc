@@ -11,10 +11,11 @@ const espnApi = axios.create({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { gameId: string } }
+  { params }: { params: Promise<{ gameId: string }> }
 ) {
   const { searchParams } = request.nextUrl;
-  const externalId = params.gameId;
+  const { gameId } = await params;
+  const externalId = gameId;
   const leagueId = searchParams.get("leagueId");
 
   if (!externalId || !leagueId) {

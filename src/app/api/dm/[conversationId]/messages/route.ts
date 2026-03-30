@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 // GET /api/dm/[conversationId]/messages — paginated message history
 export async function GET(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -19,7 +19,7 @@ export async function GET(
     }
 
     const userId = (session.user as any).id;
-    const { conversationId } = params;
+    const { conversationId } = await params;
     const { searchParams } = new URL(request.url);
     const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
     const before = searchParams.get("before");
@@ -102,7 +102,7 @@ export async function GET(
 // POST /api/dm/[conversationId]/messages — send a DM
 export async function POST(
   request: NextRequest,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -111,7 +111,7 @@ export async function POST(
     }
 
     const userId = (session.user as any).id;
-    const { conversationId } = params;
+    const { conversationId } = await params;
     const { content, replyTo } = await request.json();
 
     if (!content || content.trim().length === 0) {
