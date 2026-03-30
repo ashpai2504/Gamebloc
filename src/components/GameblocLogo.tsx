@@ -11,7 +11,7 @@ const variantClass = {
   navbar:
     "h-10 sm:h-11 w-auto max-w-[15rem] sm:max-w-[17rem] object-contain object-left scale-[1.14]",
   auth:
-    "h-13 sm:h-15 w-auto max-w-[19rem] sm:max-w-[21rem] object-contain object-center mix-blend-multiply scale-[1.08] mx-auto",
+    "h-13 sm:h-15 w-auto max-w-[19rem] sm:max-w-[21rem] object-contain object-center scale-[1.08] mx-auto",
   footer:
     "h-7 w-auto max-w-[9rem] object-contain object-left mix-blend-multiply scale-[1.06] opacity-95",
 } as const;

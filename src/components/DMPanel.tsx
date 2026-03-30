@@ -92,7 +92,7 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
     if (!isOpen || !userId) return;
 
     const socketUrl =
-      process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3000";
+      process.env.NEXT_PUBLIC_SOCKET_URL || window.location.origin;
     const socket = io(socketUrl, { transports: ["websocket", "polling"] });
     socketRef.current = socket;
 
