@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  Gamepad2,
   User,
   LogOut,
   MessageSquare,
@@ -17,6 +16,7 @@ import {
 } from "lucide-react";
 import { useDMStore } from "@/lib/store";
 import DMPanel from "./DMPanel";
+import GameblocLogo from "./GameblocLogo";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -55,14 +55,11 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="relative">
-              <Gamepad2 className="w-8 h-8 text-primary-500 group-hover:text-primary-400 transition-colors" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-green rounded-full animate-pulse-live" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
-              Gamebloc
-            </span>
+          <Link
+            href="/"
+            className="flex items-center min-w-0 shrink-0 group transition-opacity hover:opacity-95"
+          >
+            <GameblocLogo variant="navbar" className="shrink-0" />
           </Link>
 
           {/* Desktop Navigation */}

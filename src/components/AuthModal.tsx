@@ -9,11 +9,11 @@ import {
   User,
   Eye,
   EyeOff,
-  Gamepad2,
   Loader2,
   AlertCircle,
 } from "lucide-react";
 import { getSafeCallbackPath } from "@/lib/safe-callback-url";
+import GameblocLogo from "./GameblocLogo";
 
 export default function AuthModal() {
   const router = useRouter();
@@ -80,16 +80,10 @@ export default function AuthModal() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="relative">
-              <Gamepad2 className="w-10 h-10 text-primary-500" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-green rounded-full animate-pulse-live" />
-            </div>
+          <div className="flex justify-center mb-4">
+            <GameblocLogo variant="auth" />
           </div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
-            Gamebloc
-          </h1>
-          <p className="text-sm text-dark-400 mt-2">
+          <p className="text-sm text-dark-400 mt-1">
             {mode === "login"
               ? "Welcome back! Sign in to join the conversation."
               : "Create an account to chat about live games."}

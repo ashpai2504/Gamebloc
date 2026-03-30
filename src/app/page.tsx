@@ -7,6 +7,7 @@ import MatchList from "@/components/MatchList";
 import LeagueFilter from "@/components/LeagueFilter";
 import TeamSearch from "@/components/TeamSearch";
 import { RefreshCw, Zap, TrendingUp, Globe } from "lucide-react";
+import GameblocLogo from "@/components/GameblocLogo";
 import { format, parseISO } from "date-fns";
 
 export default function HomePage() {
@@ -146,9 +147,12 @@ export default function HomePage() {
                 Soccer data powered by API-Football · NCAA data powered by ESPN
               </span>
             </div>
-            <p className="text-xs text-dark-600">
-              © {new Date().getFullYear()} Gamebloc. All rights reserved.
-            </p>
+            <div className="flex items-center gap-2.5">
+              <GameblocLogo variant="footer" />
+              <p className="text-xs text-dark-600">
+                © {new Date().getFullYear()} Gamebloc. All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
       </footer>
