@@ -1,0 +1,18 @@
+# Local MongoDB for Gamebloc (the app uses MongoDB + Mongoose, not PostgreSQL).
+# Usage:
+#   docker compose up -d
+# Then in .env.local set:
+#   MONGODB_URI=mongodb://127.0.0.1:27017/gamebloc
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: gamebloc-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - gamebloc_mongo_data:/data/db
+    restart: unless-stopped
+
+volumes:
+  gamebloc_mongo_data:

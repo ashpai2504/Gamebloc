@@ -83,6 +83,7 @@ export function useSocket({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId, user?.id]);
 
+  /** Legacy: socket-only (not persisted). Prefer POST /api/messages then broadcastSavedMessage. */
   const sendMessage = useCallback(
     (content: string, type: "text" | "reaction" = "text", replyTo?: { _id: string; content: string; username: string }) => {
       if (!socketRef.current || !user) return;
@@ -107,6 +108,30 @@ export function useSocket({
     [gameId, user]
   );
 
+  /** After POST /api/messages — notify other clients with the saved document (real _id). */
+  const broadcastSavedMessage = useCallback((message: Message) => {
+    if (!socketRef.current) return;
+    socketRef.current.emit(SOCKET_EVENTS.SEND_MESSAGE, {
+      gameId,
+      message: {
+        _id: message._id,
+        userId: message.user._id,
+        username: message.user.username,
+        userAvatar: message.user.avatar,
+        content: message.content,
+        type: message.type,
+        createdAt: message.createdAt,
+        replyTo: message.replyTo
+          ? {
+              _id: message.replyTo._id,
+              content: message.replyTo.content,
+              username: message.replyTo.username,
+            }
+          : undefined,
+      },
+    });
+  }, [gameId]);
+
   const startTyping = useCallback(() => {
     if (!socketRef.current || !user) return;
     socketRef.current.emit(SOCKET_EVENTS.TYPING, {
@@ -127,6 +152,7 @@ export function useSocket({
     socket: socketRef.current,
     isConnected,
     sendMessage,
+    broadcastSavedMessage,
     startTyping,
     stopTyping,
   };

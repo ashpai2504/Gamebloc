@@ -11,10 +11,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const { userId } = params;
+    const { userId } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return NextResponse.json(

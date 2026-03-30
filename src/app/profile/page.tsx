@@ -32,6 +32,7 @@ export default function ProfilePage() {
   const router = useRouter();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [allTeams, setAllTeams] = useState<
     { teamId: string; name: string; shortName: string; logo: string; sport: string }[]
@@ -72,6 +73,7 @@ export default function ProfilePage() {
     if (status !== "authenticated") return;
 
     setIsLoading(true);
+    setLoadError(null);
     fetch("/api/profile")
       .then((res) => res.json())
       .then((result) => {
@@ -83,12 +85,15 @@ export default function ProfilePage() {
           setFavoriteTeams(p.favoriteTeams || []);
           setHiddenTeams(p.hiddenActivityTeams || []);
         } else {
-          console.error("[Profile] API error:", result.error);
-          toast.error(result.error || "Failed to load profile");
+          const msg = result.error || "Failed to load profile";
+          console.error("[Profile] API error:", msg);
+          setLoadError(msg);
+          toast.error(msg);
         }
       })
       .catch((error) => {
         console.error("[Profile] Network error:", error);
+        setLoadError("Failed to connect to server");
         toast.error("Failed to connect to server");
       })
       .finally(() => setIsLoading(false));
@@ -291,8 +296,18 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-dark-400">Failed to load profile</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="text-dark-300 font-medium">Failed to load profile</p>
+        {loadError && (
+          <p className="text-dark-500 text-sm max-w-md">{loadError}</p>
+        )}
+        <button
+          type="button"
+          onClick={() => router.push("/auth?callbackUrl=/profile")}
+          className="text-sm text-primary-400 hover:text-primary-300"
+        >
+          Sign in again
+        </button>
       </div>
     );
   }

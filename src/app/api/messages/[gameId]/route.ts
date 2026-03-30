@@ -3,16 +3,18 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import { MessageModel } from "@/lib/models";
+import mongoose from "mongoose";
+import { resolveSessionUserId } from "@/lib/session-user";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/messages/[gameId] - Fetch messages for a game
 export async function GET(
   request: NextRequest,
-  { params }: { params: { gameId: string } }
+  { params }: { params: Promise<{ gameId: string }> }
 ) {
   try {
-    const { gameId } = params;
+    const { gameId } = await params;
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "50");
@@ -74,7 +76,7 @@ export async function GET(
 // POST /api/messages/[gameId] - Send a message (requires auth)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { gameId: string } }
+  { params }: { params: Promise<{ gameId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -86,7 +88,7 @@ export async function POST(
       );
     }
 
-    const { gameId } = params;
+    const { gameId } = await params;
     const body = await request.json();
     const { content, type = "text", replyTo } = body;
 
@@ -106,13 +108,29 @@ export async function POST(
 
     await dbConnect();
 
-    const user = session.user as any;
+    const userId = await resolveSessionUserId(session);
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "Invalid session" },
+        { status: 401 }
+      );
+    }
 
-    const createData: any = {
+    const user = session.user as { username?: string | null; name?: string | null; avatar?: string | null; image?: string | null };
+
+    const createData: {
+      gameId: string;
+      userId: mongoose.Types.ObjectId;
+      username: string;
+      userAvatar: string;
+      content: string;
+      type: string;
+      replyTo?: { _id: unknown; content: string; username: string };
+    } = {
       gameId,
-      userId: user.id,
-      username: user.username || user.name,
-      userAvatar: user.avatar || user.image,
+      userId: new mongoose.Types.ObjectId(userId),
+      username: user.username || user.name || "User",
+      userAvatar: user.avatar || user.image || "",
       content: content.trim(),
       type,
     };

@@ -4,6 +4,28 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import dbConnect from "./db";
 import { UserModel } from "./models";
+import {
+  ERR_DB_PASSWORD_MISSING,
+  ERR_DB_URI_PLACEHOLDER,
+} from "./mongodb-uri";
+import { AUTH_MESSAGES } from "./user-facing-errors";
+
+/** Ensures DB is reachable; users see a generic message — details only in server logs. */
+async function ensureDbForAuth(): Promise<void> {
+  try {
+    await dbConnect();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[Auth] MongoDB connection failed (details for developers):", msg, e);
+    if (msg === ERR_DB_URI_PLACEHOLDER) {
+      throw new Error(AUTH_MESSAGES.dbUriPlaceholder);
+    }
+    if (msg === ERR_DB_PASSWORD_MISSING) {
+      throw new Error(AUTH_MESSAGES.dbPasswordMissing);
+    }
+    throw new Error(AUTH_MESSAGES.dbUnavailable);
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -28,7 +50,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email and password are required");
         }
 
-        await dbConnect();
+        await ensureDbForAuth();
 
         const isRegister = credentials.mode === "register";
 
@@ -115,7 +137,7 @@ export const authOptions: NextAuthOptions = {
     },
     async signIn({ user, account }) {
       if (account?.provider === "google") {
-        await dbConnect();
+        await ensureDbForAuth();
 
         const existingUser = await UserModel.findOne({ email: user.email });
 
@@ -135,14 +157,26 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async jwt({ token, user }) {
-      if (user) {
+      // On sign-in, `user` is present. Later refreshes only need DB if userId was never set.
+      const email = user?.email ?? (token.email as string | undefined);
+      const shouldLoadUser = Boolean(user) || Boolean(email && !token.userId);
+      if (!shouldLoadUser || !email) {
+        return token;
+      }
+
+      try {
         await dbConnect();
-        const dbUser = await UserModel.findOne({ email: user.email });
-        if (dbUser) {
-          token.userId = dbUser._id.toString();
-          token.username = dbUser.username;
-          token.avatar = dbUser.avatar;
-        }
+      } catch (e) {
+        console.error("[Auth JWT] MongoDB unavailable:", e);
+        return token;
+      }
+      const dbUser = await UserModel.findOne({
+        email: email.toLowerCase().trim(),
+      });
+      if (dbUser) {
+        token.userId = dbUser._id.toString();
+        token.username = dbUser.username;
+        token.avatar = dbUser.avatar;
       }
       return token;
     },

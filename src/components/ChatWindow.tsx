@@ -64,7 +64,7 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
     : null;
 
   // Socket connection
-  const { isConnected, sendMessage, startTyping, stopTyping } = useSocket({
+  const { isConnected, broadcastSavedMessage, startTyping, stopTyping } = useSocket({
     gameId,
     user,
     onNewMessage: (message) => {
@@ -128,8 +128,8 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
     setShowScrollToBottom(!isNearBottom);
   }, []);
 
-  // Handle sending message
-  const handleSend = () => {
+  // Handle sending message — save first (Next.js 16 needs real gameId in API route), then broadcast
+  const handleSend = async () => {
     if (!inputValue.trim() || !user) return;
 
     const replyData = replyingTo
@@ -140,18 +140,24 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
         }
       : undefined;
 
-    sendMessage(inputValue.trim(), "text", replyData);
-
-    // Also persist to database
-    fetch(`/api/messages/${gameId}`, {
+    const content = inputValue.trim();
+    const res = await fetch(`/api/messages/${gameId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        content: inputValue.trim(),
+        content,
         type: "text",
         replyTo: replyData,
       }),
-    }).catch(console.error);
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!result.success || !result.data) {
+      console.error("Failed to save message:", result);
+      return;
+    }
+
+    addMessage(result.data);
+    broadcastSavedMessage(result.data);
 
     setInputValue("");
     setReplyingTo(null);
@@ -159,10 +165,20 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
     inputRef.current?.focus();
   };
 
-  // Handle reaction
-  const handleReaction = (emoji: string) => {
+  const handleReaction = async (emoji: string) => {
     if (!user) return;
-    sendMessage(emoji, "reaction");
+    const res = await fetch(`/api/messages/${gameId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: emoji, type: "reaction" }),
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!result.success || !result.data) {
+      console.error("Failed to save reaction:", result);
+      return;
+    }
+    addMessage(result.data);
+    broadcastSavedMessage(result.data);
     setShowReactions(false);
   };
 

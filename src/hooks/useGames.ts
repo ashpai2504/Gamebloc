@@ -33,6 +33,8 @@ export function useGames(options: UseGamesOptions = {}) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const isFetchingRef = useRef(false);
+  /** Bumps on each new fetch so aborted / stale requests cannot touch loading state (Strict Mode). */
+  const loadGenRef = useRef(0);
 
   const filterBySport = useCallback(
     (list: Game[]) => {
@@ -55,75 +57,13 @@ export function useGames(options: UseGamesOptions = {}) {
       const response = await fetch(url, { signal });
       const result = await response.json();
 
-      if (result.success) {
+      if (result.success && Array.isArray(result.data?.games)) {
         applyGamesPayload(result.data.games);
-        setLastUpdated(result.data.lastUpdated);
+        setLastUpdated(result.data.lastUpdated ?? null);
         setError(null);
       } else {
         setError(result.error || "Failed to fetch games");
       }
-    },
-    [selectedLeagues, applyGamesPayload]
-  );
-
-  const fetchGamesInitial = useCallback(
-    (signal: AbortSignal) => {
-      const quickUrl = buildGamesUrl(selectedLeagues, true);
-      const fullUrl = buildGamesUrl(selectedLeagues, false);
-
-      let fullSettled = false;
-      let fullSuccess = false;
-
-      const quickPromise = fetch(quickUrl, { signal })
-        .then((r) => r.json())
-        .then(
-          (result: {
-            success?: boolean;
-            data?: { games: Game[]; lastUpdated?: string };
-          }) => {
-          if (!result?.success || !result.data?.games) return;
-          if (fullSettled && fullSuccess) return;
-          applyGamesPayload(result.data.games);
-          setLastUpdated(result.data.lastUpdated ?? null);
-          if (!fullSettled) {
-            setError(null);
-            setIsLoading(false);
-          }
-        })
-        .catch(() => {});
-
-      const fullPromise = fetch(fullUrl, { signal })
-        .then((r) => r.json())
-        .then(
-          (result: {
-            success?: boolean;
-            error?: string;
-            data?: { games: Game[]; lastUpdated?: string };
-          }) => {
-            fullSettled = true;
-            fullSuccess = !!result?.success;
-            if (result?.success && result.data?.games) {
-              applyGamesPayload(result.data.games);
-              setLastUpdated(result.data.lastUpdated ?? null);
-              setError(null);
-            } else if (!result?.success) {
-              setError(result?.error || "Failed to fetch games");
-            }
-          }
-        )
-        .catch((err: { name?: string }) => {
-          fullSettled = true;
-          fullSuccess = false;
-          if (err?.name !== "AbortError") {
-            setError("Failed to connect to server");
-          }
-        })
-        .finally(() => {
-          setIsLoading(false);
-          isFetchingRef.current = false;
-        });
-
-      return Promise.allSettled([quickPromise, fullPromise]);
     },
     [selectedLeagues, applyGamesPayload]
   );
@@ -136,9 +76,19 @@ export function useGames(options: UseGamesOptions = {}) {
         abortRef.current.abort();
       }
 
+      const myGen = ++loadGenRef.current;
+      const isCurrent = () => myGen === loadGenRef.current;
+
       const controller = new AbortController();
       abortRef.current = controller;
       isFetchingRef.current = true;
+
+      const finishLoading = () => {
+        if (isCurrent()) {
+          isFetchingRef.current = false;
+          setIsLoading(false);
+        }
+      };
 
       if (mode === "refresh") {
         setIsLoading(true);
@@ -151,18 +101,81 @@ export function useGames(options: UseGamesOptions = {}) {
             console.error("Error fetching games:", err);
           }
         } finally {
-          isFetchingRef.current = false;
-          setIsLoading(false);
+          finishLoading();
         }
         return;
       }
 
-      // initial: quick + full in parallel
+      // initial: quick + full in parallel (same AbortSignal)
       setIsLoading(true);
       setError(null);
-      await fetchGamesInitial(controller.signal);
+
+      const quickUrl = buildGamesUrl(selectedLeagues, true);
+      const fullUrl = buildGamesUrl(selectedLeagues, false);
+
+      let fullSettled = false;
+      let fullSuccess = false;
+
+      const quickPromise = fetch(quickUrl, { signal: controller.signal })
+        .then((r) => r.json())
+        .then(
+          (result: {
+            success?: boolean;
+            data?: { games?: Game[]; lastUpdated?: string };
+          }) => {
+            if (!isCurrent()) return;
+            if (
+              !result?.success ||
+              !Array.isArray(result.data?.games)
+            ) {
+              return;
+            }
+            if (fullSettled && fullSuccess) return;
+            applyGamesPayload(result.data!.games);
+            setLastUpdated(result.data!.lastUpdated ?? null);
+            if (!fullSettled) {
+              setError(null);
+              setIsLoading(false);
+            }
+          }
+        )
+        .catch(() => {});
+
+      const fullPromise = fetch(fullUrl, { signal: controller.signal })
+        .then((r) => r.json())
+        .then(
+          (result: {
+            success?: boolean;
+            error?: string;
+            data?: { games?: Game[]; lastUpdated?: string };
+          }) => {
+            if (!isCurrent()) return;
+            fullSettled = true;
+            fullSuccess = !!(result?.success && Array.isArray(result.data?.games));
+            if (result?.success && Array.isArray(result.data?.games)) {
+              applyGamesPayload(result.data.games);
+              setLastUpdated(result.data.lastUpdated ?? null);
+              setError(null);
+            } else if (!result?.success) {
+              setError(result?.error || "Failed to fetch games");
+            }
+          }
+        )
+        .catch((err: { name?: string }) => {
+          if (!isCurrent()) return;
+          fullSettled = true;
+          fullSuccess = false;
+          if (err?.name !== "AbortError") {
+            setError("Failed to connect to server");
+          }
+        })
+        .finally(() => {
+          finishLoading();
+        });
+
+      await Promise.allSettled([quickPromise, fullPromise]);
     },
-    [fetchGamesFull, fetchGamesInitial]
+    [fetchGamesFull, applyGamesPayload, selectedLeagues]
   );
 
   useEffect(() => {

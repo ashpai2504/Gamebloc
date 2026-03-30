@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import { UserModel, MessageModel } from "@/lib/models";
 import mongoose from "mongoose";
+import { resolveSessionUserId } from "@/lib/session-user";
 
 export const dynamic = "force-dynamic";
 
@@ -103,7 +104,19 @@ export async function GET(request: NextRequest) {
     }
 
     await dbConnect();
-    const userId = (session.user as any).id;
+
+    const userId = await resolveSessionUserId(session);
+    if (!userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Your session is missing account data. Please sign out and sign in again.",
+        },
+        { status: 401 }
+      );
+    }
+
     const user = await UserModel.findById(userId).lean();
 
     if (!user) {
@@ -144,7 +157,12 @@ export async function GET(request: NextRequest) {
         favoriteTeams: user.favoriteTeams || [],
         hiddenActivityTeams: user.hiddenActivityTeams || [],
         teamActivity,
-        joinedAt: user.createdAt.toISOString(),
+        joinedAt: (() => {
+          const c = user.createdAt;
+          if (c instanceof Date) return c.toISOString();
+          if (c) return new Date(c as string | number).toISOString();
+          return new Date().toISOString();
+        })(),
       },
     });
   } catch (error) {
@@ -169,7 +187,18 @@ export async function PUT(request: NextRequest) {
     }
 
     await dbConnect();
-    const userId = (session.user as any).id;
+    const userId = await resolveSessionUserId(session);
+    if (!userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Your session is missing account data. Please sign out and sign in again.",
+        },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
 
     const updateFields: Record<string, any> = {};

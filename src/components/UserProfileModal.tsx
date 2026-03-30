@@ -34,21 +34,29 @@ export default function UserProfileModal({
   const { openDM } = useDMStore();
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen || !userId) return;
 
     setIsLoading(true);
     setProfile(null);
+    setLoadError(null);
 
     fetch(`/api/profile/${userId}`)
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
           setProfile(result.data);
+        } else {
+          setLoadError(
+            typeof result.error === "string"
+              ? result.error
+              : "Could not load profile"
+          );
         }
       })
-      .catch(console.error)
+      .catch(() => setLoadError("Could not load profile"))
       .finally(() => setIsLoading(false));
   }, [userId, isOpen]);
 
@@ -74,7 +82,9 @@ export default function UserProfileModal({
             </div>
           ) : !profile ? (
             <div className="text-center py-16 px-6">
-              <p className="text-sm text-dark-400">User not found</p>
+              <p className="text-sm text-dark-400">
+                {loadError || "User not found"}
+              </p>
               <button
                 onClick={onClose}
                 className="mt-4 text-xs text-primary-400 hover:underline"

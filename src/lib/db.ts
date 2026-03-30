@@ -1,10 +1,5 @@
 import mongoose from "mongoose";
-
-const MONGODB_URI = process.env.MONGODB_URI!;
-
-if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable in .env.local");
-}
+import { resolveMongoConnection } from "./mongodb-uri";
 
 interface MongooseCache {
   conn: typeof mongoose | null;
@@ -27,11 +22,18 @@ async function dbConnect(): Promise<typeof mongoose> {
   }
 
   if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
+    const { uri, user, pass } = resolveMongoConnection();
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    const opts: mongoose.ConnectOptions = {
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 15_000,
+    };
+    if (user !== undefined && pass !== undefined) {
+      opts.user = user;
+      opts.pass = pass;
+    }
+
+    cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
       console.log("✅ MongoDB connected successfully");
       return mongoose;
     });
@@ -41,6 +43,12 @@ async function dbConnect(): Promise<typeof mongoose> {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
+    console.error("[MongoDB] Connection failed:", e);
+    if (process.env.NODE_ENV === "development") {
+      console.error(
+        "[MongoDB] Check: Atlas → Network Access (IP allowlist), Database user + password in MONGODB_URI (URL-encode special characters), cluster not paused, restart `npm run dev` after editing .env.local"
+      );
+    }
     throw e;
   }
 

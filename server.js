@@ -105,7 +105,9 @@ app.prepare().then(() => {
       const { gameId, message } = data;
 
       const emitData = {
-        _id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        _id:
+          message._id ||
+          `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         gameId,
         user: {
           _id: message.userId,
@@ -114,15 +116,15 @@ app.prepare().then(() => {
         },
         content: message.content,
         type: message.type || "text",
-        createdAt: new Date().toISOString(),
+        createdAt: message.createdAt || new Date().toISOString(),
       };
 
       if (message.replyTo) {
         emitData.replyTo = message.replyTo;
       }
 
-      // Broadcast to all users in the room (including sender)
-      io.to(gameId).emit("new_message", emitData);
+      // Others in the room only — sender already has the message from POST /api/messages
+      socket.to(gameId).emit("new_message", emitData);
     });
 
     // ---------- Typing indicators ----------
