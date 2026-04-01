@@ -1,16 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "react-hot-toast";
 import { GAMEBLOC_LOGO_PNG } from "@/lib/gamebloc-logo-path";
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Gamebloc - Live Sports Chat",
@@ -47,8 +40,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`dark ${inter.className}`}>
-      <body className="bg-dark-950 text-white">
+    <html lang="en" className="dark">
+      <body className="bg-dark-950 text-white font-sans antialiased">
         <Providers>
           <Navbar />
           <main className="pt-16 min-h-screen">{children}</main>
