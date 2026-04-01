@@ -34,15 +34,13 @@ async function computeTeamActivity(userId: string, origin: string) {
 
   // Fetch all games from our games API (internal)
   let allGames: any[] = [];
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
-    
     const res = await fetch(`${origin}/api/games`, {
       cache: "no-store",
       signal: controller.signal,
     });
-    clearTimeout(timeoutId);
     const result = await res.json();
     if (result.success) {
       allGames = result.data.games;
@@ -50,6 +48,8 @@ async function computeTeamActivity(userId: string, origin: string) {
   } catch (error) {
     console.error("[Team Activity] Failed to fetch games:", error);
     // Return empty if fetch fails
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   // Build a map: gameId → { homeTeam, awayTeam }
