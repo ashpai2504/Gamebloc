@@ -5,12 +5,14 @@ import dbConnect from "@/lib/db";
 import { UserModel, MessageModel } from "@/lib/models";
 import mongoose from "mongoose";
 import { resolveSessionUserId } from "@/lib/session-user";
+import { getRequestOrigin } from "@/lib/app-origin";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 // ─── Helper: compute team activity from messages ────────────────────────────
 
-async function computeTeamActivity(userId: string) {
+async function computeTeamActivity(userId: string, origin: string) {
   await dbConnect();
 
   // Get all unique gameIds this user has messaged in
@@ -33,16 +35,14 @@ async function computeTeamActivity(userId: string) {
   // Fetch all games from our games API (internal)
   let allGames: any[] = [];
   try {
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
     
-    const res = await fetch(`${baseUrl}/api/games`, { 
+    const res = await fetch(`${origin}/api/games`, {
       cache: "no-store",
-      signal: controller.signal 
+      signal: controller.signal,
     });
     clearTimeout(timeoutId);
-    
     const result = await res.json();
     if (result.success) {
       allGames = result.data.games;
@@ -132,9 +132,11 @@ export async function GET(request: NextRequest) {
     if (!user.bio) user.bio = "";
 
     // Compute team activity (gracefully handle failures)
+    const origin = getRequestOrigin(request);
+
     let rawActivity: any[] = [];
     try {
-      rawActivity = await computeTeamActivity(userId);
+      rawActivity = await computeTeamActivity(userId, origin);
     } catch (error) {
       console.error("[Profile] Failed to compute team activity:", error);
     }

@@ -4,8 +4,10 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import { UserModel, MessageModel } from "@/lib/models";
 import mongoose from "mongoose";
+import { getRequestOrigin } from "@/lib/app-origin";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 // GET /api/profile/[userId] — Get public profile for any user
 
@@ -53,8 +55,8 @@ export async function GET(
     if (Object.keys(gameCountMap).length > 0) {
       let allGames: any[] = [];
       try {
-        const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-        const res = await fetch(`${baseUrl}/api/games`, { cache: "no-store" });
+        const origin = getRequestOrigin(request);
+        const res = await fetch(`${origin}/api/games`, { cache: "no-store" });
         const result = await res.json();
         if (result.success) allGames = result.data.games;
       } catch {}

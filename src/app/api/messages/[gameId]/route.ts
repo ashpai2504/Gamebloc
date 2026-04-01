@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import { resolveSessionUserId } from "@/lib/session-user";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 // GET /api/messages/[gameId] - Fetch messages for a game
 export async function GET(

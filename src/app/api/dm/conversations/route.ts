@@ -6,6 +6,7 @@ import { DMConversationModel, DMMessageModel, UserModel } from "@/lib/models";
 import mongoose from "mongoose";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 // GET /api/dm/conversations — all conversations for current user
 export async function GET(_request: NextRequest) {

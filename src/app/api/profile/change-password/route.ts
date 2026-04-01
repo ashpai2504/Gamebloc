@@ -6,6 +6,7 @@ import { UserModel, OtpModel } from "@/lib/models";
 import bcrypt from "bcryptjs";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 // POST /api/profile/change-password — Verify OTP and change password
 

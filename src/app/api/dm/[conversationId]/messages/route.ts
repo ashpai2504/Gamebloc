@@ -6,6 +6,7 @@ import { DMConversationModel, DMMessageModel } from "@/lib/models";
 import mongoose from "mongoose";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 // GET /api/dm/[conversationId]/messages — paginated message history
 export async function GET(

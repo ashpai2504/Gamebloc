@@ -6,6 +6,7 @@ import { UserModel, OtpModel } from "@/lib/models";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 // POST /api/profile/request-otp — Generate and "send" OTP for password change
 // In production you'd email this; for now we store it and return a success message.

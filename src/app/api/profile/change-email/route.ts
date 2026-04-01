@@ -5,6 +5,7 @@ import dbConnect from "@/lib/db";
 import { UserModel } from "@/lib/models";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 // POST /api/profile/change-email — Update email (requires current password)
 
