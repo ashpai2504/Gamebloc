@@ -8,6 +8,16 @@ import { resolveSessionUserId } from "@/lib/session-user";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const revalidate = 0;
+
+function jsonNoStore(body: unknown, init?: ResponseInit) {
+  const headers = new Headers(init?.headers);
+  headers.set("Cache-Control", "no-store, max-age=0, must-revalidate");
+  return NextResponse.json(body, {
+    ...init,
+    headers,
+  });
+}
 
 // GET /api/messages/[gameId] - Fetch messages for a game
 export async function GET(
@@ -39,7 +49,7 @@ export async function GET(
     // Reverse to get chronological order
     messages.reverse();
 
-    return NextResponse.json({
+    return jsonNoStore({
       success: true,
       data: {
         messages: messages.map((msg) => ({
@@ -67,7 +77,7 @@ export async function GET(
     });
   } catch (error) {
     console.error("Error fetching messages:", error);
-    return NextResponse.json(
+    return jsonNoStore(
       { success: false, error: "Failed to fetch messages" },
       { status: 500 }
     );
@@ -83,7 +93,7 @@ export async function POST(
     const session = await getServerSession(authOptions);
 
     if (!session?.user) {
-      return NextResponse.json(
+      return jsonNoStore(
         { success: false, error: "You must be signed in to send messages" },
         { status: 401 }
       );
@@ -94,14 +104,14 @@ export async function POST(
     const { content, type = "text", replyTo } = body;
 
     if (!content || content.trim().length === 0) {
-      return NextResponse.json(
+      return jsonNoStore(
         { success: false, error: "Message content is required" },
         { status: 400 }
       );
     }
 
     if (content.length > 500) {
-      return NextResponse.json(
+      return jsonNoStore(
         { success: false, error: "Message too long (max 500 characters)" },
         { status: 400 }
       );
@@ -111,7 +121,7 @@ export async function POST(
 
     const userId = await resolveSessionUserId(session);
     if (!userId) {
-      return NextResponse.json(
+      return jsonNoStore(
         { success: false, error: "Invalid session" },
         { status: 401 }
       );
@@ -146,7 +156,7 @@ export async function POST(
 
     const message = await MessageModel.create(createData);
 
-    return NextResponse.json({
+    return jsonNoStore({
       success: true,
       data: {
         _id: message._id.toString(),
@@ -170,7 +180,7 @@ export async function POST(
     });
   } catch (error) {
     console.error("Error sending message:", error);
-    return NextResponse.json(
+    return jsonNoStore(
       { success: false, error: "Failed to send message" },
       { status: 500 }
     );

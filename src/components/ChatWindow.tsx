@@ -50,6 +50,8 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [profileModalUserId, setProfileModalUserId] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -94,15 +96,23 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
   useEffect(() => {
     clearChat();
     setLoadingMessages(true);
+    setLoadError(null);
 
-    fetch(`/api/messages/${gameId}?limit=100`)
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.success) {
-          setMessages(result.data.messages);
+    fetch(`/api/messages/${gameId}?limit=100`, { cache: "no-store" })
+      .then(async (res) => {
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok || !result.success) {
+          throw new Error(result.error || "Failed to load messages");
         }
+        return result;
       })
-      .catch(console.error)
+      .then((result) => {
+        setMessages(result.data.messages);
+      })
+      .catch((error) => {
+        console.error(error);
+        setLoadError("Could not load saved messages for this match.");
+      })
       .finally(() => setLoadingMessages(false));
 
     return () => clearChat();
@@ -131,6 +141,7 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
   // Handle sending message — save first (Next.js 16 needs real gameId in API route), then broadcast
   const handleSend = async () => {
     if (!inputValue.trim() || !user) return;
+    setSendError(null);
 
     const replyData = replyingTo
       ? {
@@ -143,6 +154,7 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
     const content = inputValue.trim();
     const res = await fetch(`/api/messages/${gameId}`, {
       method: "POST",
+      cache: "no-store",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         content,
@@ -153,6 +165,7 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
     const result = await res.json().catch(() => ({}));
     if (!result.success || !result.data) {
       console.error("Failed to save message:", result);
+      setSendError(result.error || "Could not save message.");
       return;
     }
 
@@ -167,14 +180,17 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
 
   const handleReaction = async (emoji: string) => {
     if (!user) return;
+    setSendError(null);
     const res = await fetch(`/api/messages/${gameId}`, {
       method: "POST",
+      cache: "no-store",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: emoji, type: "reaction" }),
     });
     const result = await res.json().catch(() => ({}));
     if (!result.success || !result.data) {
       console.error("Failed to save reaction:", result);
+      setSendError(result.error || "Could not save reaction.");
       return;
     }
     addMessage(result.data);
@@ -241,7 +257,7 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
               No messages yet
             </h3>
             <p className="text-xs text-dark-500 max-w-[240px]">
-              Be the first to share your thoughts about this match!
+              {loadError || "Be the first to share your thoughts about this match!"}
             </p>
           </div>
         ) : (
@@ -307,6 +323,9 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
       <div className="px-4 py-3 border-t border-dark-700/50 bg-dark-850">
         {user ? (
           <>
+            {sendError && (
+              <p className="mb-2 text-xs text-red-400">{sendError}</p>
+            )}
             {/* Reply preview bar */}
             {replyingTo && (
               <div className="flex items-center gap-2 mb-2 px-3 py-2 bg-dark-800 rounded-lg border-l-2 border-primary-500 animate-fade-in">
