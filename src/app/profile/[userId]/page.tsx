@@ -11,10 +11,13 @@ import {
   TrendingUp,
   Loader2,
   Settings,
+  MessageCircle,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import TeamActivityCard from "@/components/TeamActivityCard";
 import { FavoriteTeam, TeamActivity } from "@/types";
+import { useDMStore } from "@/lib/store";
+import { storeDmIntentAfterSignIn } from "@/lib/dm-intent";
 
 interface PublicProfile {
   _id: string;
@@ -31,6 +34,7 @@ export default function PublicProfilePage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const openDM = useDMStore((s) => s.openDM);
   const userId = params.userId as string;
 
   const [profile, setProfile] = useState<PublicProfile | null>(null);
@@ -125,9 +129,35 @@ export default function PublicProfilePage() {
             </div>
 
             <div className="flex-1 min-w-0 pb-1">
-              <h1 className="text-xl font-bold text-white truncate">
-                {profile.username}
-              </h1>
+              <div className="flex flex-wrap items-start gap-2">
+                <h1 className="text-xl font-bold text-white truncate flex-1 min-w-0">
+                  {profile.username}
+                </h1>
+                {session?.user ? (
+                  <button
+                    type="button"
+                    onClick={() => openDM(userId)}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-500 text-white text-xs font-semibold transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    Message
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      storeDmIntentAfterSignIn(userId);
+                      router.push(
+                        `/auth?callbackUrl=${encodeURIComponent(`/profile/${userId}`)}`
+                      );
+                    }}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-500 text-white text-xs font-semibold transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    Sign in to message
+                  </button>
+                )}
+              </div>
               {profile.bio && (
                 <p className="text-sm text-dark-400 mt-0.5 line-clamp-2">
                   {profile.bio}

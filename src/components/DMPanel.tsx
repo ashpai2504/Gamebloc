@@ -7,6 +7,7 @@ import {
   useCallback,
 } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import {
   X,
@@ -65,6 +66,7 @@ function formatTimestamp(dateStr: string): string {
 
 export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const { targetDMUserId, clearTargetDMUser, setTotalUnread } = useDMStore();
 
   const [view, setView] = useState<"list" | "chat">("list");
@@ -210,6 +212,12 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
       fetchConversations();
     }
   }, [isOpen, userId, fetchConversations]);
+
+  useEffect(() => {
+    if (isOpen && !userId && targetDMUserId) {
+      clearTargetDMUser();
+    }
+  }, [isOpen, userId, targetDMUserId, clearTargetDMUser]);
 
   // ---------- Open targeted conversation (from profile modal) ----------
   useEffect(() => {
@@ -413,6 +421,42 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
+        {!userId ? (
+          <div className="flex flex-col flex-1 items-center justify-center px-8 py-12 text-center">
+            <div className="w-16 h-16 rounded-full bg-dark-800 flex items-center justify-center mb-4">
+              <MessageCircle className="w-8 h-8 text-dark-500" />
+            </div>
+            <h3 className="text-sm font-semibold text-white mb-1">
+              Sign in to use messages
+            </h3>
+            <p className="text-xs text-dark-500 mb-6 max-w-[240px] leading-relaxed">
+              Direct messages are available after you sign in. Open someone&apos;s
+              profile and tap Message to start a chat.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                router.push(
+                  `/auth?callbackUrl=${encodeURIComponent(
+                    typeof window !== "undefined" ? window.location.pathname : "/"
+                  )}`
+                );
+              }}
+              className="px-5 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white text-sm font-semibold transition-colors"
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-3 text-xs text-dark-400 hover:text-dark-200"
+            >
+              Close
+            </button>
+          </div>
+        ) : (
+          <>
         {/* ── Conversation List View ── */}
         <div
           className={`absolute inset-0 flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
@@ -818,6 +862,8 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
             );
           })()}
         </div>
+          </>
+        )}
       </div>
     </>
   );

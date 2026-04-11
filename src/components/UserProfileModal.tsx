@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { X, Calendar, MessageSquare, Star, Loader2, ExternalLink, MessageCircle } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import TeamActivityCard from "./TeamActivityCard";
 import { FavoriteTeam, TeamActivity } from "@/types";
 import { useDMStore } from "@/lib/store";
+import { storeDmIntentAfterSignIn } from "@/lib/dm-intent";
 
 interface UserProfileData {
   _id: string;
@@ -31,6 +33,8 @@ export default function UserProfileModal({
   onClose,
 }: UserProfileModalProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { data: session } = useSession();
   const { openDM } = useDMStore();
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -197,26 +201,82 @@ export default function UserProfileModal({
 
               {/* Actions */}
               <div className="px-5 pb-5 flex gap-2.5">
-                <button
-                  onClick={() => {
-                    onClose();
-                    openDM(profile._id);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white transition-all text-xs font-semibold shadow-lg shadow-primary-900/30"
-                >
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  Message
-                </button>
-                <button
-                  onClick={() => {
-                    onClose();
-                    router.push(`/profile/${profile._id}`);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-white hover:border-dark-600 transition-all text-xs font-medium"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  View Profile
-                </button>
+                {(() => {
+                  const myId = (session?.user as { id?: string } | undefined)?.id;
+                  const isSelf = Boolean(myId && myId === profile._id);
+                  if (isSelf) {
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          router.push("/profile");
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-white hover:border-dark-600 transition-all text-xs font-medium"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        My profile
+                      </button>
+                    );
+                  }
+                  if (!session?.user) {
+                    return (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            storeDmIntentAfterSignIn(profile._id);
+                            onClose();
+                            router.push(
+                              `/auth?callbackUrl=${encodeURIComponent(pathname || "/")}`
+                            );
+                          }}
+                          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white transition-all text-xs font-semibold shadow-lg shadow-primary-900/30"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          Sign in to message
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onClose();
+                            router.push(`/profile/${profile._id}`);
+                          }}
+                          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-white hover:border-dark-600 transition-all text-xs font-medium"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          View Profile
+                        </button>
+                      </>
+                    );
+                  }
+                  return (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          openDM(profile._id);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white transition-all text-xs font-semibold shadow-lg shadow-primary-900/30"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        Message
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          router.push(`/profile/${profile._id}`);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-white hover:border-dark-600 transition-all text-xs font-medium"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        View Profile
+                      </button>
+                    </>
+                  );
+                })()}
               </div>
             </>
           )}
