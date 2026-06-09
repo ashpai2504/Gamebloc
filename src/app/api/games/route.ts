@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchAllGames } from "@/lib/sports-api";
+import dbConnect from "@/lib/db";
+import { MessageModel } from "@/lib/models";
 
 export const dynamic = "force-dynamic";
 
@@ -47,8 +49,26 @@ export async function GET(request: NextRequest) {
       inFlightRequests.set(cacheKey, requestPromise);
     }
 
-    const games = await requestPromise;
+    let games = await requestPromise;
     inFlightRequests.delete(cacheKey);
+
+    // Enrich with real message counts from MongoDB (single aggregate query)
+    try {
+      await dbConnect();
+      const gameIds = games.map((g: { id: string }) => g.id);
+      const counts: { _id: string; count: number }[] = await MessageModel.aggregate([
+        { $match: { gameId: { $in: gameIds } } },
+        { $group: { _id: "$gameId", count: { $sum: 1 } } },
+      ]);
+      const countMap: Record<string, number> = {};
+      for (const c of counts) countMap[c._id] = c.count;
+      games = games.map((g: { id: string; messageCount: number }) => ({
+        ...g,
+        messageCount: countMap[g.id] ?? 0,
+      }));
+    } catch {
+      // Non-fatal: DB unavailable means counts stay 0
+    }
 
     responseCache.set(cacheKey, { data: games, timestamp: now });
 

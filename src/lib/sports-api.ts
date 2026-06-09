@@ -34,6 +34,11 @@ const SPORT_DATE_WINDOWS: Record<SportType, { pastDays: number; futureDays: numb
   ncaa_basketball: { pastDays: 1, futureDays: 1 },
 };
 
+/** Per-league overrides — e.g. tournaments that span weeks */
+const LEAGUE_DATE_WINDOWS: Record<string, { pastDays: number; futureDays: number }> = {
+  fifa_wc: { pastDays: 2, futureDays: 42 }, // full World Cup (Jun 11 – Jul 19)
+};
+
 // ---------- Status Mapping ----------
 
 function mapEspnStatus(state: string): GameStatus {
@@ -194,24 +199,51 @@ async function fetchEspnGames(
 
     const requests: Promise<{ data: { events?: any[] } }>[] = [
       espnApi
-        .get(`/${slug}/scoreboard`, { params: { limit: 50 } })
+        .get(`/${slug}/scoreboard`, { params: { limit: 100 } })
         .catch(() => empty),
     ];
 
     if (!quick) {
-      const window = SPORT_DATE_WINDOWS[sport];
-      for (let d = -window.pastDays; d <= window.futureDays; d++) {
-        if (d === 0) continue;
-        const date = new Date(today);
-        date.setDate(date.getDate() + d);
-        const dateStr = date.toISOString().split("T")[0].replace(/-/g, "");
-        requests.push(
-          espnApi
-            .get(`/${slug}/scoreboard`, {
-              params: { dates: dateStr, limit: 40 },
-            })
-            .catch(() => empty)
-        );
+      const dateWindow = LEAGUE_DATE_WINDOWS[leagueId] ?? SPORT_DATE_WINDOWS[sport];
+
+      if (dateWindow.futureDays > 7) {
+        // Large window (e.g. World Cup): batch into weekly range requests so we
+        // don't fire 40+ individual HTTP calls.  ESPN accepts dates=YYYYMMDD-YYYYMMDD.
+        for (
+          let weekStart = -dateWindow.pastDays;
+          weekStart <= dateWindow.futureDays;
+          weekStart += 7
+        ) {
+          const weekEnd = Math.min(weekStart + 6, dateWindow.futureDays);
+          const s = new Date(today);
+          s.setDate(s.getDate() + weekStart);
+          const e = new Date(today);
+          e.setDate(e.getDate() + weekEnd);
+          const startStr = s.toISOString().split("T")[0].replace(/-/g, "");
+          const endStr = e.toISOString().split("T")[0].replace(/-/g, "");
+          requests.push(
+            espnApi
+              .get(`/${slug}/scoreboard`, {
+                params: { dates: `${startStr}-${endStr}`, limit: 100 },
+              })
+              .catch(() => empty)
+          );
+        }
+      } else {
+        // Normal window: one request per day (existing behaviour)
+        for (let d = -dateWindow.pastDays; d <= dateWindow.futureDays; d++) {
+          if (d === 0) continue;
+          const date = new Date(today);
+          date.setDate(date.getDate() + d);
+          const dateStr = date.toISOString().split("T")[0].replace(/-/g, "");
+          requests.push(
+            espnApi
+              .get(`/${slug}/scoreboard`, {
+                params: { dates: dateStr, limit: 40 },
+              })
+              .catch(() => empty)
+          );
+        }
       }
     }
 
