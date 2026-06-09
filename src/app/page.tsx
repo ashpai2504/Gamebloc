@@ -6,6 +6,7 @@ import { useGameStore } from "@/lib/store";
 import MatchList from "@/components/MatchList";
 import LeagueFilter from "@/components/LeagueFilter";
 import TeamSearch from "@/components/TeamSearch";
+import WorldCupBanner from "@/components/WorldCupBanner";
 import { RefreshCw, Zap, TrendingUp, Globe } from "lucide-react";
 import GameblocLogo from "@/components/GameblocLogo";
 import { format, parseISO } from "date-fns";
@@ -51,8 +52,29 @@ export default function HomePage() {
   const filteredScheduled = filterByTeam ? filterByTeam(scheduledGames) : scheduledGames;
   const filteredFinished = filterByTeam ? filterByTeam(finishedGames) : finishedGames;
 
+  const wcLiveCount = useMemo(
+    () => liveGames.filter((g) => g.league.id === "fifa_wc").length,
+    [liveGames]
+  );
+  const wcTotalCount = useMemo(
+    () => games.filter((g) => g.league.id === "fifa_wc").length,
+    [games]
+  );
+
+  const handleViewWcMatches = () => {
+    setSport("soccer");         // clears selectedLeagues as a side-effect
+    toggleLeague("fifa_wc");    // then adds fifa_wc
+  };
+
   return (
     <div className="min-h-screen bg-dark-950 bg-grid-pattern">
+      {/* FIFA World Cup 2026 Banner */}
+      <WorldCupBanner
+        onViewMatches={handleViewWcMatches}
+        liveMatchCount={wcLiveCount}
+        totalMatchCount={wcTotalCount}
+      />
+
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary-950/20 via-transparent to-transparent" />

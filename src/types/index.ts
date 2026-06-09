@@ -125,6 +125,14 @@ export interface League {
 // ---------- Predefined Leagues ----------
 export const SOCCER_LEAGUES: League[] = [
   {
+    id: "fifa_wc",
+    name: "FIFA World Cup 2026",
+    shortName: "WC26",
+    logo: "/leagues/fifa-wc-2026.png",
+    country: "USA/CAN/MEX",
+    sport: "soccer",
+  },
+  {
     id: "pl",
     name: "Premier League",
     shortName: "PL",
@@ -197,6 +205,7 @@ export const ALL_LEAGUES: League[] = [...SOCCER_LEAGUES, ...NCAA_LEAGUES];
 
 // ---------- API Football League IDs (RapidAPI) ----------
 export const API_FOOTBALL_LEAGUE_IDS: Record<string, number> = {
+  fifa_wc: 1, // FIFA World Cup
   pl: 39, // Premier League
   laliga: 140, // La Liga
   bundesliga: 78, // Bundesliga
@@ -208,6 +217,7 @@ export const API_FOOTBALL_LEAGUE_IDS: Record<string, number> = {
 // ---------- ESPN Sport Slugs (used for all API calls) ----------
 export const ESPN_SPORT_SLUGS: Record<string, string> = {
   // Soccer
+  fifa_wc: "soccer/fifa.world",
   pl: "soccer/eng.1",
   laliga: "soccer/esp.1",
   bundesliga: "soccer/ger.1",
