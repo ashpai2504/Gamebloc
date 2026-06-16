@@ -213,6 +213,8 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
       return;
     }
 
+    seenIdsRef.current.add(result.data._id);
+    lastTimestampRef.current = result.data.createdAt;
     addMessage(result.data);
     broadcastSavedMessage(result.data);
 
@@ -237,6 +239,8 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
       setSendError(result.error || "Could not save reaction.");
       return;
     }
+    seenIdsRef.current.add(result.data._id);
+    lastTimestampRef.current = result.data.createdAt;
     addMessage(result.data);
     broadcastSavedMessage(result.data);
     setShowReactions(false);
