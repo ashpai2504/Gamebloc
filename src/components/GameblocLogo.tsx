@@ -7,11 +7,11 @@ import { GAMEBLOC_LOGO_PNG } from "@/lib/gamebloc-logo-path";
 
 const variantClass = {
   navbar:
-    "h-10 sm:h-11 w-auto max-w-[12rem] sm:max-w-[14rem] object-contain object-left",
+    "h-14 sm:h-16 w-auto max-w-[14rem] sm:max-w-[16rem] object-contain object-left",
   auth:
-    "h-28 sm:h-32 w-auto max-w-[16rem] sm:max-w-[18rem] object-contain object-center mx-auto",
+    "h-36 sm:h-40 w-auto max-w-[20rem] sm:max-w-[22rem] object-contain object-center mx-auto",
   footer:
-    "h-8 w-auto max-w-[8rem] object-contain object-left opacity-90",
+    "h-12 w-auto max-w-[10rem] object-contain object-left opacity-90",
 } as const;
 
 interface GameblocLogoProps {
