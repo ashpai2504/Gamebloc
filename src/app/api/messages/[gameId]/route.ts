@@ -130,7 +130,7 @@ export async function POST(
       );
     }
 
-    const user = session.user as { username?: string | null; name?: string | null; avatar?: string | null; image?: string | null };
+    const user = session.user as { username?: string | null; displayName?: string | null; name?: string | null; avatar?: string | null; image?: string | null };
 
     const createData: {
       gameId: string;
@@ -143,7 +143,7 @@ export async function POST(
     } = {
       gameId,
       userId: new mongoose.Types.ObjectId(userId),
-      username: user.username || user.name || "User",
+      username: user.displayName || user.username || user.name || "User",
       userAvatar: user.avatar || user.image || "",
       content: content.trim(),
       type,

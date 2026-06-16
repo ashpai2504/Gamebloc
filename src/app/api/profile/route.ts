@@ -130,6 +130,7 @@ export async function GET(request: NextRequest) {
     if (!user.favoriteTeams) user.favoriteTeams = [];
     if (!user.hiddenActivityTeams) user.hiddenActivityTeams = [];
     if (!user.bio) user.bio = "";
+    if (!user.displayName) user.displayName = "";
 
     // Compute team activity (gracefully handle failures)
     const origin = getRequestOrigin(request);
@@ -152,6 +153,7 @@ export async function GET(request: NextRequest) {
       data: {
         _id: user._id.toString(),
         username: user.username,
+        displayName: user.displayName || "",
         email: user.email,
         avatar: user.avatar || "",
         bio: user.bio || "",
@@ -239,6 +241,18 @@ export async function PUT(request: NextRequest) {
       updateFields.username = username;
     }
 
+    // Display Name (non-unique, max 30 chars)
+    if (body.displayName !== undefined) {
+      const dn = String(body.displayName).trim();
+      if (dn.length > 30) {
+        return NextResponse.json(
+          { success: false, error: "Display name must be 30 characters or less" },
+          { status: 400 }
+        );
+      }
+      updateFields.displayName = dn;
+    }
+
     // Favorite teams (max 3)
     if (body.favoriteTeams !== undefined) {
       if (!Array.isArray(body.favoriteTeams) || body.favoriteTeams.length > 3) {
@@ -284,6 +298,7 @@ export async function PUT(request: NextRequest) {
       data: {
         _id: updatedUser._id.toString(),
         username: updatedUser.username,
+        displayName: updatedUser.displayName || "",
         email: updatedUser.email,
         avatar: updatedUser.avatar || "",
         bio: updatedUser.bio || "",

@@ -10,6 +10,7 @@ export interface IFavoriteTeam {
 
 export interface IUser extends Document {
   username: string;
+  displayName: string;
   email: string;
   password?: string;
   avatar?: string;
@@ -30,6 +31,12 @@ const UserSchema = new Schema<IUser>(
       trim: true,
       minlength: 3,
       maxlength: 20,
+    },
+    displayName: {
+      type: String,
+      trim: true,
+      maxlength: 30,
+      default: "",
     },
     email: {
       type: String,

@@ -27,6 +27,7 @@ export default function AuthModal() {
 
   const [formData, setFormData] = useState({
     username: "",
+    displayName: "",
     email: "",
     password: "",
   });
@@ -53,6 +54,7 @@ export default function AuthModal() {
         email: formData.email,
         password: formData.password,
         username: formData.username,
+        displayName: formData.displayName,
         mode,
         redirect: false,
       });
@@ -101,28 +103,48 @@ export default function AuthModal() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Username (register only) */}
+            {/* Username + Display Name (register only) */}
             {mode === "register" && (
-              <div className="animate-slide-down">
-                <label className="block text-xs font-medium text-dark-400 mb-1.5">
-                  Username
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
-                  <input
-                    type="text"
-                    value={formData.username}
-                    onChange={(e) =>
-                      setFormData({ ...formData, username: e.target.value })
-                    }
-                    placeholder="Choose a username"
-                    required={mode === "register"}
-                    minLength={3}
-                    maxLength={20}
-                    className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-700/50 rounded-xl text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
-                  />
+              <>
+                <div className="animate-slide-down">
+                  <label className="block text-xs font-medium text-dark-400 mb-1.5">
+                    Username <span className="text-dark-600">(unique login ID · no spaces)</span>
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
+                    <input
+                      type="text"
+                      value={formData.username}
+                      onChange={(e) =>
+                        setFormData({ ...formData, username: e.target.value.replace(/\s/g, "") })
+                      }
+                      placeholder="e.g. ashmit123"
+                      required={mode === "register"}
+                      minLength={3}
+                      maxLength={20}
+                      className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-700/50 rounded-xl text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
+                    />
+                  </div>
                 </div>
-              </div>
+                <div className="animate-slide-down">
+                  <label className="block text-xs font-medium text-dark-400 mb-1.5">
+                    Display Name <span className="text-dark-600">(shown in chat · changeable)</span>
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
+                    <input
+                      type="text"
+                      value={formData.displayName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, displayName: e.target.value })
+                      }
+                      placeholder="e.g. Ash ⚽"
+                      maxLength={30}
+                      className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-700/50 rounded-xl text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
+                    />
+                  </div>
+                </div>
+              </>
             )}
 
             {/* Email */}

@@ -14,6 +14,7 @@ export interface FavoriteTeam {
 export interface User {
   _id: string;
   username: string;
+  displayName?: string;
   email: string;
   password?: string;
   avatar?: string;
@@ -43,6 +44,7 @@ export interface TeamActivity {
 export interface UserProfile {
   _id: string;
   username: string;
+  displayName?: string;
   email?: string; // only for own profile
   avatar?: string;
   bio?: string;

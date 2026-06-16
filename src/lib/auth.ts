@@ -43,6 +43,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
         username: { label: "Username", type: "text" },
+        displayName: { label: "Display Name", type: "text" },
         mode: { label: "Mode", type: "text" }, // "login" | "register"
       },
       async authorize(credentials) {
@@ -75,9 +76,11 @@ export const authOptions: NextAuthOptions = {
           }
 
           const hashedPassword = await bcrypt.hash(credentials.password, 12);
+          const displayName = credentials.displayName?.trim() || credentials.username;
 
           const newUser = await UserModel.create({
             username: credentials.username,
+            displayName,
             email: credentials.email,
             password: hashedPassword,
             provider: "credentials",
@@ -176,6 +179,7 @@ export const authOptions: NextAuthOptions = {
       if (dbUser) {
         token.userId = dbUser._id.toString();
         token.username = dbUser.username;
+        token.displayName = dbUser.displayName || dbUser.username;
         token.avatar = dbUser.avatar;
       }
       return token;
@@ -184,6 +188,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session.user as any).id = token.userId;
         (session.user as any).username = token.username;
+        (session.user as any).displayName = token.displayName;
         (session.user as any).avatar = token.avatar;
       }
       return session;

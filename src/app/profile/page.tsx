@@ -40,6 +40,7 @@ export default function ProfilePage() {
 
   // Editable fields
   const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [favoriteTeams, setFavoriteTeams] = useState<FavoriteTeam[]>([]);
   const [hiddenTeams, setHiddenTeams] = useState<string[]>([]);
@@ -81,6 +82,7 @@ export default function ProfilePage() {
           const p = result.data;
           setProfile(p);
           setUsername(p.username);
+          setDisplayName(p.displayName || "");
           setBio(p.bio || "");
           setFavoriteTeams(p.favoriteTeams || []);
           setHiddenTeams(p.hiddenActivityTeams || []);
@@ -138,6 +140,7 @@ export default function ProfilePage() {
     if (!profile) return;
     const changed =
       username !== profile.username ||
+      displayName !== (profile.displayName || "") ||
       bio !== (profile.bio || "") ||
       JSON.stringify(favoriteTeams) !==
         JSON.stringify(profile.favoriteTeams || []) ||
@@ -155,6 +158,7 @@ export default function ProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username,
+          displayName,
           bio,
           favoriteTeams,
           hiddenActivityTeams: hiddenTeams,
@@ -168,6 +172,7 @@ export default function ProfilePage() {
             ? {
                 ...prev,
                 username,
+                displayName,
                 bio,
                 favoriteTeams,
                 hiddenActivityTeams: hiddenTeams,
@@ -399,18 +404,37 @@ export default function ProfilePage() {
             {/* Username */}
             <div>
               <label className="block text-xs font-medium text-dark-400 mb-1.5">
-                Username
+                Username <span className="text-dark-600">(unique login ID · 3-20 chars · no spaces)</span>
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
                   maxLength={20}
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
                 />
               </div>
+            </div>
+
+            {/* Display Name */}
+            <div>
+              <label className="block text-xs font-medium text-dark-400 mb-1.5">
+                Display Name <span className="text-dark-600">(shown in chat · max 30 chars)</span>
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  maxLength={30}
+                  placeholder="e.g. Ash ⚽"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
+                />
+              </div>
+              <p className="text-[10px] text-dark-500 mt-1">Others see this name in chat, not your username.</p>
             </div>
 
             {/* Bio */}
