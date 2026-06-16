@@ -10,10 +10,7 @@ export const metadata: Metadata = {
   description:
     "Real-time sports chat platform. Join the conversation during live games across soccer, NCAA, and more.",
   icons: {
-    icon: [
-      { url: GAMEBLOC_LOGO_PNG, type: "image/png" },
-      { url: "/images/logo.svg", type: "image/svg+xml" },
-    ],
+    icon: [{ url: GAMEBLOC_LOGO_PNG, type: "image/png" }],
     apple: GAMEBLOC_LOGO_PNG,
   },
   keywords: [
