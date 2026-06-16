@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { FavoriteTeam, TeamActivity, UserProfile } from "@/types";
+import { POPULAR_TEAMS } from "@/lib/popular-teams";
 import FavoriteTeamsPicker from "@/components/FavoriteTeamsPicker";
 import TeamActivityCard from "@/components/TeamActivityCard";
 import toast from "react-hot-toast";
@@ -101,16 +102,22 @@ export default function ProfilePage() {
       .finally(() => setIsLoading(false));
   }, [status]);
 
-  // Fetch available teams from games API
+  // Fetch available teams — seed with popular clubs, then merge live games
   useEffect(() => {
+    const teamMap = new Map<
+      string,
+      { teamId: string; name: string; shortName: string; logo: string; sport: string }
+    >();
+
+    // Always include popular clubs/national teams so off-season teams are findable
+    for (const t of POPULAR_TEAMS) {
+      teamMap.set(t.teamId, t);
+    }
+
     fetch("/api/games")
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
-          const teamMap = new Map<
-            string,
-            { teamId: string; name: string; shortName: string; logo: string; sport: string }
-          >();
           for (const game of result.data.games) {
             for (const side of ["homeTeam", "awayTeam"] as const) {
               const t = game[side];
@@ -125,14 +132,16 @@ export default function ProfilePage() {
               }
             }
           }
-          setAllTeams(
-            Array.from(teamMap.values()).sort((a, b) =>
-              a.name.localeCompare(b.name)
-            )
-          );
         }
       })
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => {
+        setAllTeams(
+          Array.from(teamMap.values()).sort((a, b) =>
+            a.name.localeCompare(b.name)
+          )
+        );
+      });
   }, []);
 
   // Track changes
