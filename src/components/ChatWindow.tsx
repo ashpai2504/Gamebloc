@@ -342,7 +342,7 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
       {showScrollToBottom && (
         <button
           onClick={() => scrollToBottom()}
-          className="absolute bottom-24 right-6 w-8 h-8 rounded-full bg-dark-700 border border-dark-600 flex items-center justify-center text-dark-300 hover:text-white transition-colors shadow-lg"
+          className="absolute bottom-24 right-6 w-8 h-8 rounded-full bg-dark-700 border border-dark-600 flex items-center justify-center text-dark-300 hover:text-dark-50 transition-colors shadow-lg"
         >
           <ArrowDown className="w-4 h-4" />
         </button>
@@ -409,7 +409,7 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
               onKeyDown={handleKeyDown}
               placeholder="Share your thoughts..."
               maxLength={500}
-              className="flex-1 bg-dark-800 border border-dark-700/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
+              className="flex-1 bg-dark-800 border border-dark-700/50 rounded-xl px-4 py-2.5 text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
             />
             <button
               onClick={handleSend}
@@ -427,7 +427,7 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
                 `/auth?callbackUrl=${encodeURIComponent(pathname || "/")}`
               )
             }
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-white hover:border-primary-500/50 transition-all group"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-dark-50 hover:border-primary-500/50 transition-all group"
           >
             <Lock className="w-4 h-4 text-dark-500 group-hover:text-primary-400 transition-colors" />
             <span className="text-sm">

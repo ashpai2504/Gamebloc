@@ -130,7 +130,7 @@ export default function AuthModal() {
                       required={mode === "register"}
                       minLength={3}
                       maxLength={20}
-                      className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-700/50 rounded-xl text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-700/50 rounded-xl text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
                     />
                   </div>
                 </div>
@@ -148,7 +148,7 @@ export default function AuthModal() {
                       }
                       placeholder="e.g. Ash ⚽"
                       maxLength={30}
-                      className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-700/50 rounded-xl text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
+                      className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-700/50 rounded-xl text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
                     />
                   </div>
                 </div>
@@ -170,7 +170,7 @@ export default function AuthModal() {
                   }
                   placeholder="Enter your email"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-700/50 rounded-xl text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-dark-900 border border-dark-700/50 rounded-xl text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
                 />
               </div>
             </div>
@@ -191,7 +191,7 @@ export default function AuthModal() {
                   placeholder="Enter your password"
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-12 py-2.5 bg-dark-900 border border-dark-700/50 rounded-xl text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
+                  className="w-full pl-10 pr-12 py-2.5 bg-dark-900 border border-dark-700/50 rounded-xl text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
                 />
                 <button
                   type="button"
@@ -223,7 +223,7 @@ export default function AuthModal() {
                     }
                     placeholder="Re-enter your password"
                     required={mode === "register"}
-                    className={`w-full pl-10 pr-12 py-2.5 bg-dark-900 border rounded-xl text-sm text-white placeholder-dark-500 focus:outline-none focus:ring-1 transition-all ${
+                    className={`w-full pl-10 pr-12 py-2.5 bg-dark-900 border rounded-xl text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:ring-1 transition-all ${
                       formData.confirmPassword && formData.password !== formData.confirmPassword
                         ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/25"
                         : "border-dark-700/50 focus:border-primary-500/50 focus:ring-primary-500/25"

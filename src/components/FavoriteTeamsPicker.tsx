@@ -201,7 +201,7 @@ export default function FavoriteTeamsPicker({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={`Search ${activeSport === "all" ? "all teams" : SPORT_LABELS[activeSport] + " teams"}…`}
-            className="w-full pl-10 pr-4 py-2.5 text-sm bg-transparent text-white placeholder-dark-500 focus:outline-none"
+            className="w-full pl-10 pr-4 py-2.5 text-sm bg-transparent text-dark-50 placeholder-dark-500 focus:outline-none"
           />
           {search && (
             <button

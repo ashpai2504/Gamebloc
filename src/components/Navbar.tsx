@@ -17,6 +17,7 @@ import {
 import { useDMStore } from "@/lib/store";
 import DMPanel from "./DMPanel";
 import GameblocLogo from "./GameblocLogo";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -66,7 +67,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-6">
             <Link
               href="/"
-              className="text-dark-300 hover:text-white transition-colors text-sm font-medium"
+              className="text-dark-300 hover:text-dark-50 transition-colors text-sm font-medium"
             >
               Matches
             </Link>
@@ -78,6 +79,7 @@ export default function Navbar() {
 
           {/* Auth Section */}
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             {status === "loading" ? (
               <div className="w-8 h-8 rounded-full bg-dark-700 animate-pulse" />
             ) : session ? (
@@ -85,7 +87,7 @@ export default function Navbar() {
                 {/* DM Button */}
                 <button
                   onClick={() => openDM()}
-                  className="relative p-2 rounded-lg text-dark-400 hover:text-white hover:bg-dark-800 border border-transparent hover:border-dark-600/50 transition-all"
+                  className="relative p-2 rounded-lg text-dark-400 hover:text-dark-50 hover:bg-dark-800 border border-transparent hover:border-dark-600/50 transition-all"
                   title="Direct Messages"
                 >
                   <MessageCircle className="w-5 h-5" />
@@ -125,7 +127,7 @@ export default function Navbar() {
                     />
                     <div className="absolute right-0 mt-2 w-48 bg-dark-800 border border-dark-600/50 rounded-xl shadow-xl z-50 overflow-hidden animate-slide-down">
                       <div className="px-4 py-3 border-b border-dark-700">
-                        <p className="text-sm font-medium text-white">
+                        <p className="text-sm font-medium text-dark-50">
                           {user?.username || user?.name}
                         </p>
                         <p className="text-xs text-dark-400 truncate">
@@ -174,7 +176,7 @@ export default function Navbar() {
             {/* Mobile menu toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-dark-400 hover:text-white"
+              className="md:hidden p-2 text-dark-400 hover:text-dark-50"
             >
               {isMobileMenuOpen ? (
                 <X className="w-5 h-5" />
@@ -193,7 +195,7 @@ export default function Navbar() {
             <Link
               href="/"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-lg text-dark-300 hover:text-white hover:bg-dark-700/50 transition-colors text-sm"
+              className="block px-3 py-2 rounded-lg text-dark-300 hover:text-dark-50 hover:bg-dark-700/50 transition-colors text-sm"
             >
               Matches
             </Link>

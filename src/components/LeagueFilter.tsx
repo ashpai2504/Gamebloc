@@ -66,10 +66,10 @@ export default function LeagueFilter({
             <button
               key={tab.id}
               onClick={() => onChangeSport(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+              className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all flex-1 sm:flex-none ${
                 selectedSport === tab.id
-                  ? "bg-primary-600 text-white shadow-md shadow-primary-600/25"
-                  : "text-dark-400 hover:text-dark-200 hover:bg-dark-700/50"
+                  ? "bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-lg shadow-primary-600/30"
+                  : "text-dark-400 hover:text-dark-100 hover:bg-dark-700/50"
               }`}
             >
               {tab.icon}
@@ -84,16 +84,22 @@ export default function LeagueFilter({
       <div className="flex flex-wrap gap-2">
         {visibleLeagues.map((league) => {
           const isSelected = selectedLeagues.includes(league.id);
+          const isWc = league.id === "fifa_wc";
           return (
             <button
               key={league.id}
               onClick={() => onToggleLeague(league.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
                 isSelected
-                  ? "bg-primary-600/20 border-primary-500/50 text-primary-300"
-                  : "bg-dark-800/50 border-dark-700/50 text-dark-400 hover:text-dark-200 hover:border-dark-600/50"
+                  ? isWc
+                    ? "bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-md shadow-amber-500/10"
+                    : "bg-primary-600/20 border-primary-500/50 text-primary-300 shadow-md shadow-primary-600/10"
+                  : isWc
+                  ? "bg-amber-500/5 border-amber-500/30 text-amber-300/90 hover:border-amber-500/50"
+                  : "bg-dark-800/50 border-dark-700/50 text-dark-400 hover:text-dark-100 hover:border-dark-600/50"
               }`}
             >
+              {isWc && <span aria-hidden>🏆</span>}
               <span>{league.shortName}</span>
               {isSelected && <X className="w-3 h-3" />}
             </button>

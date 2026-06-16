@@ -84,7 +84,7 @@ export default function WorldCupBanner({
             <div className="min-w-0">
               {/* Title row */}
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <h2 className="text-lg sm:text-xl font-bold text-white leading-none">
+                <h2 className="text-lg sm:text-xl font-bold text-dark-50 leading-none">
                   FIFA World Cup{" "}
                   <span className="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">
                     2026
@@ -157,11 +157,11 @@ export default function WorldCupBanner({
 
             <button
               onClick={onViewMatches}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 text-amber-400 hover:text-amber-300 transition-all text-sm font-medium whitespace-nowrap"
+              className="group flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-amber-950 transition-all text-sm font-bold whitespace-nowrap shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40"
             >
               <Trophy className="w-4 h-4" />
               <span>View Matches</span>
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
         </div>

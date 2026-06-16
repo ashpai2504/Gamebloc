@@ -426,7 +426,7 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
             <div className="w-16 h-16 rounded-full bg-dark-800 flex items-center justify-center mb-4">
               <MessageCircle className="w-8 h-8 text-dark-500" />
             </div>
-            <h3 className="text-sm font-semibold text-white mb-1">
+            <h3 className="text-sm font-semibold text-dark-50 mb-1">
               Sign in to use messages
             </h3>
             <p className="text-xs text-dark-500 mb-6 max-w-[240px] leading-relaxed">
@@ -466,7 +466,7 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
           {/* Header */}
           <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-dark-700/40">
             <div className="flex items-center gap-2.5">
-              <h2 className="text-base font-bold text-white">Messages</h2>
+              <h2 className="text-base font-bold text-dark-50">Messages</h2>
               {conversations.some((c) => c.unreadCount > 0) && (
                 <span className="px-1.5 py-0.5 rounded-full bg-primary-600 text-[10px] font-bold text-white">
                   {conversations.reduce((s, c) => s + c.unreadCount, 0)}
@@ -476,13 +476,13 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
             <div className="flex items-center gap-2">
               <button
                 title="New message"
-                className="p-1.5 rounded-lg text-dark-400 hover:text-white hover:bg-dark-800 transition-colors"
+                className="p-1.5 rounded-lg text-dark-400 hover:text-dark-50 hover:bg-dark-800 transition-colors"
               >
                 <Edit3 className="w-4 h-4" />
               </button>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg text-dark-400 hover:text-white hover:bg-dark-800 transition-colors"
+                className="p-1.5 rounded-lg text-dark-400 hover:text-dark-50 hover:bg-dark-800 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -538,7 +538,7 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
                           <span
                             className={`text-sm truncate ${
                               isUnread
-                                ? "font-bold text-white"
+                                ? "font-bold text-dark-50"
                                 : "font-semibold text-dark-200"
                             }`}
                           >
@@ -599,7 +599,7 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
                 <div className="flex items-center gap-3 px-4 py-3.5 border-b border-dark-700/40 bg-dark-900">
                   <button
                     onClick={handleBack}
-                    className="p-1.5 rounded-lg text-dark-400 hover:text-white hover:bg-dark-800 transition-colors"
+                    className="p-1.5 rounded-lg text-dark-400 hover:text-dark-50 hover:bg-dark-800 transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
@@ -612,7 +612,7 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
                         size="md"
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-white leading-tight">
+                        <h3 className="text-sm font-semibold text-dark-50 leading-tight">
                           {other.username}
                         </h3>
                         <div className="h-3.5">
@@ -630,7 +630,7 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
 
                   <button
                     onClick={onClose}
-                    className="p-1.5 rounded-lg text-dark-400 hover:text-white hover:bg-dark-800 transition-colors"
+                    className="p-1.5 rounded-lg text-dark-400 hover:text-dark-50 hover:bg-dark-800 transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -847,7 +847,7 @@ export default function DMPanel({ isOpen, onClose }: DMPanelProps) {
                         other ? `Message ${other.username}…` : "Message…"
                       }
                       maxLength={1000}
-                      className="flex-1 bg-transparent text-sm text-white placeholder-dark-500 focus:outline-none py-0.5"
+                      className="flex-1 bg-transparent text-sm text-dark-50 placeholder-dark-500 focus:outline-none py-0.5"
                     />
                     <button
                       onClick={handleSend}

@@ -93,7 +93,7 @@ export default function MatchPage() {
         <div className="px-4 py-3 border-b border-dark-700/50">
           <button
             onClick={() => router.push("/")}
-            className="flex items-center gap-2 text-dark-400 hover:text-white transition-colors text-sm"
+            className="flex items-center gap-2 text-dark-400 hover:text-dark-50 transition-colors text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>All Matches</span>
@@ -162,7 +162,7 @@ export default function MatchPage() {
                     </span>
                   )}
                 </div>
-                <h3 className="text-sm font-semibold text-white leading-tight">
+                <h3 className="text-sm font-semibold text-dark-50 leading-tight">
                   {game.homeTeam.name}
                 </h3>
                 <span className="text-[11px] text-dark-500 mt-0.5">Home</span>
@@ -175,7 +175,7 @@ export default function MatchPage() {
                   <div className="flex items-center gap-3">
                     <span
                       className={`text-4xl font-bold tabular-nums ${
-                        isLive ? "text-white" : "text-dark-300"
+                        isLive ? "text-dark-50" : "text-dark-300"
                       }`}
                     >
                       {game.homeTeam.score}
@@ -183,7 +183,7 @@ export default function MatchPage() {
                     <span className="text-lg text-dark-600">:</span>
                     <span
                       className={`text-4xl font-bold tabular-nums ${
-                        isLive ? "text-white" : "text-dark-300"
+                        isLive ? "text-dark-50" : "text-dark-300"
                       }`}
                     >
                       {game.awayTeam.score}
@@ -225,7 +225,7 @@ export default function MatchPage() {
                     </span>
                   )}
                 </div>
-                <h3 className="text-sm font-semibold text-white leading-tight">
+                <h3 className="text-sm font-semibold text-dark-50 leading-tight">
                   {game.awayTeam.name}
                 </h3>
                 <span className="text-[11px] text-dark-500 mt-0.5">Away</span>

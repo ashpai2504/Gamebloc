@@ -37,8 +37,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-dark-950 text-white font-sans antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-dark-950 text-dark-50 font-sans antialiased">
         <Providers>
           <Navbar />
           <main className="pt-16 min-h-screen">{children}</main>

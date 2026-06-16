@@ -227,7 +227,7 @@ function StatBar({
       <div className="flex items-center justify-between mb-2">
         <span
           className={`text-sm font-bold tabular-nums w-10 text-left ${
-            homeLeads ? "text-white" : "text-dark-400"
+            homeLeads ? "text-dark-50" : "text-dark-400"
           }`}
         >
           {stat.home}
@@ -237,7 +237,7 @@ function StatBar({
         </span>
         <span
           className={`text-sm font-bold tabular-nums w-10 text-right ${
-            awayLeads ? "text-white" : "text-dark-400"
+            awayLeads ? "text-dark-50" : "text-dark-400"
           }`}
         >
           {stat.away}
@@ -381,7 +381,7 @@ export default function MatchStats({ game }: MatchStatsProps) {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-primary-500 flex-shrink-0" />
-                <span className="text-base font-bold text-white tabular-nums">
+                <span className="text-base font-bold text-dark-50 tabular-nums">
                   {homePosRaw ?? "0"}%
                 </span>
               </div>
@@ -389,7 +389,7 @@ export default function MatchStats({ game }: MatchStatsProps) {
                 Possession
               </span>
               <div className="flex items-center gap-1.5">
-                <span className="text-base font-bold text-white tabular-nums">
+                <span className="text-base font-bold text-dark-50 tabular-nums">
                   {awayPosRaw ?? "0"}%
                 </span>
                 <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />

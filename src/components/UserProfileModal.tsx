@@ -105,7 +105,7 @@ export default function UserProfileModal({
 
                 <button
                   onClick={onClose}
-                  className="absolute top-3 right-3 p-1.5 rounded-lg bg-dark-800/80 border border-dark-700/50 text-dark-400 hover:text-white transition-colors"
+                  className="absolute top-3 right-3 p-1.5 rounded-lg bg-dark-800/80 border border-dark-700/50 text-dark-400 hover:text-dark-50 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -132,7 +132,7 @@ export default function UserProfileModal({
 
               {/* User info */}
               <div className="px-5 pt-11 pb-4">
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-bold text-dark-50">
                   {profile.username}
                 </h3>
                 {profile.bio && (
@@ -212,7 +212,7 @@ export default function UserProfileModal({
                           onClose();
                           router.push("/profile");
                         }}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-white hover:border-dark-600 transition-all text-xs font-medium"
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-dark-50 hover:border-dark-600 transition-all text-xs font-medium"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         My profile
@@ -242,7 +242,7 @@ export default function UserProfileModal({
                             onClose();
                             router.push(`/profile/${profile._id}`);
                           }}
-                          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-white hover:border-dark-600 transition-all text-xs font-medium"
+                          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-dark-50 hover:border-dark-600 transition-all text-xs font-medium"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                           View Profile
@@ -269,7 +269,7 @@ export default function UserProfileModal({
                           onClose();
                           router.push(`/profile/${profile._id}`);
                         }}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-white hover:border-dark-600 transition-all text-xs font-medium"
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-dark-300 hover:text-dark-50 hover:border-dark-600 transition-all text-xs font-medium"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         View Profile

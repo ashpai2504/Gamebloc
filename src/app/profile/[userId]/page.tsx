@@ -101,7 +101,7 @@ export default function PublicProfilePage() {
           <div className="max-w-2xl mx-auto px-4 sm:px-6">
             <button
               onClick={() => router.back()}
-              className="absolute top-4 left-4 flex items-center gap-2 text-dark-400 hover:text-white transition-colors text-sm bg-dark-900/50 backdrop-blur-sm px-3 py-1.5 rounded-lg"
+              className="absolute top-4 left-4 flex items-center gap-2 text-dark-400 hover:text-dark-50 transition-colors text-sm bg-dark-900/50 backdrop-blur-sm px-3 py-1.5 rounded-lg"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -130,7 +130,7 @@ export default function PublicProfilePage() {
 
             <div className="flex-1 min-w-0 pb-1">
               <div className="flex flex-wrap items-start gap-2">
-                <h1 className="text-xl font-bold text-white truncate flex-1 min-w-0">
+                <h1 className="text-xl font-bold text-dark-50 truncate flex-1 min-w-0">
                   {profile.username}
                 </h1>
                 {session?.user ? (
@@ -189,7 +189,7 @@ export default function PublicProfilePage() {
           <section className="bg-dark-900 rounded-2xl border border-dark-700/50 overflow-hidden">
             <div className="px-5 py-4 border-b border-dark-700/50 flex items-center gap-2">
               <Star className="w-4 h-4 text-amber-400" />
-              <h2 className="text-sm font-semibold text-white">
+              <h2 className="text-sm font-semibold text-dark-50">
                 Favorite Teams
               </h2>
               <span className="text-[10px] text-dark-500 bg-dark-800 px-2 py-0.5 rounded-full ml-auto">
@@ -263,7 +263,7 @@ export default function PublicProfilePage() {
           <section className="bg-dark-900 rounded-2xl border border-dark-700/50 overflow-hidden">
             <div className="px-5 py-4 border-b border-dark-700/50 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-accent-green" />
-              <h2 className="text-sm font-semibold text-white">
+              <h2 className="text-sm font-semibold text-dark-50">
                 Most Active Chats
               </h2>
             </div>

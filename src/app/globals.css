@@ -3,19 +3,58 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+   * Theme-aware neutral scale (space-separated RGB for Tailwind's
+   * rgb(var() / <alpha>) syntax). The `dark` Tailwind palette reads these.
+   *
+   * :root holds the LIGHT theme. In light mode the scale is inverted so that
+   * high numbers (950/900/800) become light surfaces and low numbers
+   * (50/100/200) become dark text — keeping every existing `bg-dark-950` /
+   * `text-dark-400` class semantically correct with no component changes.
+   * The `.dark` block restores the original dark values.
+   */
+  :root {
+    color-scheme: light;
+    --d50: 15 23 42; /* ink / primary text */
+    --d100: 15 23 42;
+    --d200: 30 41 59;
+    --d300: 51 65 85;
+    --d400: 71 85 105; /* secondary text */
+    --d500: 100 116 139; /* muted text */
+    --d600: 148 163 184; /* faint text / strong border */
+    --d700: 226 232 240; /* borders / raised surface */
+    --d800: 255 255 255; /* card surface */
+    --d850: 255 255 255;
+    --d900: 255 255 255; /* navbar / elevated panels */
+    --d950: 247 248 250; /* page background */
+  }
+
+  .dark {
+    color-scheme: dark;
+    --d50: 248 250 252;
+    --d100: 241 245 249;
+    --d200: 226 232 240;
+    --d300: 203 213 225;
+    --d400: 148 163 184;
+    --d500: 100 116 139;
+    --d600: 71 85 105;
+    --d700: 51 65 85;
+    --d800: 30 41 59;
+    --d850: 23 32 51;
+    --d900: 15 23 42;
+    --d950: 2 6 23;
+  }
+
   * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
   }
 
-  html {
-    color-scheme: dark;
-  }
-
   body {
-    @apply bg-dark-950 text-white font-sans antialiased;
+    @apply bg-dark-950 text-dark-50 font-sans antialiased;
     min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   /* Custom scrollbar */
@@ -80,5 +119,40 @@
 
   .bg-noise {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+  }
+
+  /* Frosted glass surface — adapts via the themed `dark` palette */
+  .glass {
+    @apply bg-dark-900/70 backdrop-blur-xl border border-dark-700/50;
+  }
+
+  /* Animated gradient text for headings */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      110deg,
+      theme("colors.primary.400"),
+      theme("colors.accent.cyan"),
+      theme("colors.primary.400")
+    );
+    background-size: 200% auto;
+    @apply animate-shimmer;
+  }
+
+  /* Shimmer skeleton for loading states */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--d800)) 25%,
+      rgb(var(--d700)) 37%,
+      rgb(var(--d800)) 63%
+    );
+    background-size: 400% 100%;
+    @apply animate-shimmer;
+  }
+
+  /* Subtle elevated card shadow that reads in both themes */
+  .card-shadow {
+    box-shadow: 0 1px 2px rgba(2, 6, 23, 0.06), 0 8px 24px -8px rgba(2, 6, 23, 0.12);
   }
 }

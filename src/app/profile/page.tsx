@@ -339,7 +339,7 @@ export default function ProfilePage() {
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4">
           <button
             onClick={() => router.push("/")}
-            className="flex items-center gap-2 text-dark-400 hover:text-white transition-colors text-sm mb-4"
+            className="flex items-center gap-2 text-dark-400 hover:text-dark-50 transition-colors text-sm mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Matches</span>
@@ -364,7 +364,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-bold text-white truncate">
+              <h1 className="text-xl font-bold text-dark-50 truncate">
                 {profile.username}
               </h1>
               {profile.bio && (
@@ -407,7 +407,7 @@ export default function ProfilePage() {
         <section className="bg-dark-900 rounded-2xl border border-dark-700/50 overflow-hidden">
           <div className="px-5 py-4 border-b border-dark-700/50 flex items-center gap-2">
             <Pen className="w-4 h-4 text-primary-400" />
-            <h2 className="text-sm font-semibold text-white">Edit Profile</h2>
+            <h2 className="text-sm font-semibold text-dark-50">Edit Profile</h2>
           </div>
           <div className="px-5 py-5 space-y-4">
             {/* Username */}
@@ -422,7 +422,7 @@ export default function ProfilePage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
                   maxLength={20}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
                 />
               </div>
             </div>
@@ -440,7 +440,7 @@ export default function ProfilePage() {
                   onChange={(e) => setDisplayName(e.target.value)}
                   maxLength={30}
                   placeholder="e.g. Ash ⚽"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all"
                 />
               </div>
               <p className="text-[10px] text-dark-500 mt-1">Others see this name in chat, not your username.</p>
@@ -460,7 +460,7 @@ export default function ProfilePage() {
                 maxLength={160}
                 rows={2}
                 placeholder="Tell us about yourself..."
-                className="w-full px-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all resize-none"
+                className="w-full px-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/25 transition-all resize-none"
               />
             </div>
           </div>
@@ -470,7 +470,7 @@ export default function ProfilePage() {
         <section className="bg-dark-900 rounded-2xl border border-dark-700/50 overflow-hidden">
           <div className="px-5 py-4 border-b border-dark-700/50 flex items-center gap-2">
             <Star className="w-4 h-4 text-amber-400" />
-            <h2 className="text-sm font-semibold text-white">
+            <h2 className="text-sm font-semibold text-dark-50">
               Favorite Teams
             </h2>
             <span className="text-[10px] text-dark-500 bg-dark-800 px-2 py-0.5 rounded-full">
@@ -490,7 +490,7 @@ export default function ProfilePage() {
         <section className="bg-dark-900 rounded-2xl border border-dark-700/50 overflow-hidden">
           <div className="px-5 py-4 border-b border-dark-700/50 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-accent-green" />
-            <h2 className="text-sm font-semibold text-white">
+            <h2 className="text-sm font-semibold text-dark-50">
               Top Active Team Chats
             </h2>
             <span className="text-[10px] text-dark-500 bg-dark-800 px-2 py-0.5 rounded-full">
@@ -514,7 +514,7 @@ export default function ProfilePage() {
         <section className="bg-dark-900 rounded-2xl border border-dark-700/50 overflow-hidden">
           <div className="px-5 py-4 border-b border-dark-700/50 flex items-center gap-2">
             <Shield className="w-4 h-4 text-dark-400" />
-            <h2 className="text-sm font-semibold text-white">
+            <h2 className="text-sm font-semibold text-dark-50">
               Account Settings
             </h2>
           </div>
@@ -527,7 +527,7 @@ export default function ProfilePage() {
                     <Mail className="w-4 h-4 text-dark-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-white">{profile.email}</p>
+                    <p className="text-sm text-dark-50">{profile.email}</p>
                     <p className="text-[11px] text-dark-500">Email address</p>
                   </div>
                 </div>
@@ -548,7 +548,7 @@ export default function ProfilePage() {
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="New email address"
-                    className="w-full px-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 transition-all"
+                    className="w-full px-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 transition-all"
                   />
                   <div className="flex gap-2">
                     <button
@@ -568,7 +568,7 @@ export default function ProfilePage() {
                         setShowEmailChange(false);
                         setNewEmail("");
                       }}
-                      className="px-4 py-2 rounded-lg text-dark-400 hover:text-white text-xs transition-colors"
+                      className="px-4 py-2 rounded-lg text-dark-400 hover:text-dark-50 text-xs transition-colors"
                     >
                       Cancel
                     </button>
@@ -585,7 +585,7 @@ export default function ProfilePage() {
                     <Lock className="w-4 h-4 text-dark-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-white">Password</p>
+                    <p className="text-sm text-dark-50">Password</p>
                     <p className="text-[11px] text-dark-500">
                       {isCredentials
                         ? "Change via OTP verification"
@@ -640,21 +640,21 @@ export default function ProfilePage() {
                         onChange={(e) => setOtpCode(e.target.value)}
                         placeholder="Enter 6-digit OTP"
                         maxLength={6}
-                        className="w-full px-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 transition-all tracking-widest text-center font-mono"
+                        className="w-full px-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 transition-all tracking-widest text-center font-mono"
                       />
                       <input
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="New password (min 6 chars)"
-                        className="w-full px-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 transition-all"
+                        className="w-full px-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 transition-all"
                       />
                       <input
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirm new password"
-                        className="w-full px-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-white placeholder-dark-500 focus:outline-none focus:border-primary-500/50 transition-all"
+                        className="w-full px-4 py-2.5 rounded-xl bg-dark-800 border border-dark-700/50 text-sm text-dark-50 placeholder-dark-500 focus:outline-none focus:border-primary-500/50 transition-all"
                       />
                       <div className="flex gap-2">
                         <button
@@ -678,7 +678,7 @@ export default function ProfilePage() {
                             setNewPassword("");
                             setConfirmPassword("");
                           }}
-                          className="px-4 py-2 rounded-lg text-dark-400 hover:text-white text-xs transition-colors"
+                          className="px-4 py-2 rounded-lg text-dark-400 hover:text-dark-50 text-xs transition-colors"
                         >
                           Cancel
                         </button>

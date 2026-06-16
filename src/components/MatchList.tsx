@@ -18,20 +18,31 @@ function SectionHeader({
   title,
   count,
   color,
+  accent,
+  live = false,
 }: {
   icon: React.ReactNode;
   title: string;
   count: number;
   color: string;
+  accent: string;
+  live?: boolean;
 }) {
   if (count === 0) return null;
   return (
-    <div className="flex items-center gap-2 mb-3 mt-6 first:mt-0">
+    <div className="flex items-center gap-2.5 mb-4 mt-8 first:mt-0">
+      <span className={`h-5 w-1 rounded-full ${accent}`} />
       <div className={`${color}`}>{icon}</div>
-      <h2 className="text-sm font-semibold text-dark-300 uppercase tracking-wider">
+      <h2 className="text-sm font-extrabold text-dark-100 uppercase tracking-wider">
         {title}
       </h2>
-      <span className="text-xs text-dark-500 bg-dark-800 px-2 py-0.5 rounded-full">
+      {live && (
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+        </span>
+      )}
+      <span className="text-[11px] font-bold text-dark-300 bg-dark-800 border border-dark-700/60 px-2 py-0.5 rounded-full tabular-nums">
         {count}
       </span>
     </div>
@@ -40,29 +51,29 @@ function SectionHeader({
 
 function SkeletonCard() {
   return (
-    <div className="bg-dark-800/80 rounded-xl border border-dark-700/50 p-4 animate-pulse">
-      <div className="flex items-center justify-between mb-3">
-        <div className="h-3 w-16 bg-dark-700 rounded" />
-        <div className="h-3 w-10 bg-dark-700 rounded" />
+    <div className="bg-dark-800/80 rounded-2xl border border-dark-700/50 p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="h-3 w-16 skeleton rounded" />
+        <div className="h-3 w-10 skeleton rounded" />
       </div>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-full bg-dark-700" />
-            <div className="h-4 w-32 bg-dark-700 rounded" />
+            <div className="w-9 h-9 rounded-xl skeleton" />
+            <div className="h-4 w-32 skeleton rounded" />
           </div>
-          <div className="h-5 w-6 bg-dark-700 rounded" />
+          <div className="h-6 w-6 skeleton rounded" />
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-full bg-dark-700" />
-            <div className="h-4 w-28 bg-dark-700 rounded" />
+            <div className="w-9 h-9 rounded-xl skeleton" />
+            <div className="h-4 w-28 skeleton rounded" />
           </div>
-          <div className="h-5 w-6 bg-dark-700 rounded" />
+          <div className="h-6 w-6 skeleton rounded" />
         </div>
       </div>
-      <div className="mt-3 pt-3 border-t border-dark-700/50">
-        <div className="h-3 w-20 bg-dark-700 rounded" />
+      <div className="mt-4 pt-3 border-t border-dark-700/50">
+        <div className="h-3 w-20 skeleton rounded" />
       </div>
     </div>
   );
@@ -121,9 +132,11 @@ export default function MatchList({
         title="Live Now"
         count={liveGames.length}
         color="text-red-500"
+        accent="bg-red-500"
+        live
       />
       {liveGames.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-2">
           {liveGames.map((game) => (
             <MatchCard key={game.id} game={game} />
           ))}
@@ -136,9 +149,10 @@ export default function MatchList({
         title="Upcoming"
         count={scheduledGames.length}
         color="text-primary-400"
+        accent="bg-primary-500"
       />
       {scheduledGames.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-2">
           {scheduledGames.map((game) => (
             <MatchCard key={game.id} game={game} />
           ))}
@@ -151,9 +165,10 @@ export default function MatchList({
         title="Finished"
         count={finishedGames.length}
         color="text-dark-500"
+        accent="bg-dark-600"
       />
       {finishedGames.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {finishedGames.map((game) => (
             <MatchCard key={game.id} game={game} />
           ))}
