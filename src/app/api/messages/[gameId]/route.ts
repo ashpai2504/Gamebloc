@@ -33,10 +33,13 @@ export async function GET(
 
     await dbConnect();
 
+    const since = searchParams.get("since"); // ISO timestamp — for polling
     const query: any = { gameId };
 
     if (before) {
       query.createdAt = { $lt: new Date(before) };
+    } else if (since) {
+      query.createdAt = { $gt: new Date(since) };
     }
 
     const total = await MessageModel.countDocuments({ gameId });

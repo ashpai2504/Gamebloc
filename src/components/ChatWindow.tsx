@@ -56,6 +56,8 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const seenIdsRef = useRef<Set<string>>(new Set());
+  const lastTimestampRef = useRef<string | null>(null);
 
   const user = session?.user
     ? {
@@ -70,7 +72,11 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
     gameId,
     user,
     onNewMessage: (message) => {
-      addMessage(message);
+      if (!seenIdsRef.current.has(message._id)) {
+        seenIdsRef.current.add(message._id);
+        lastTimestampRef.current = message.createdAt;
+        addMessage(message);
+      }
     },
     onRoomUsers: (data) => {
       setActiveUsers(data.count);
@@ -95,6 +101,8 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
   // Fetch existing messages
   useEffect(() => {
     clearChat();
+    seenIdsRef.current = new Set();
+    lastTimestampRef.current = null;
     setLoadingMessages(true);
     setLoadError(null);
 
@@ -107,7 +115,12 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
         return result;
       })
       .then((result) => {
-        setMessages(result.data.messages);
+        const msgs: Message[] = result.data.messages;
+        setMessages(msgs);
+        msgs.forEach((m) => seenIdsRef.current.add(m._id));
+        if (msgs.length > 0) {
+          lastTimestampRef.current = msgs[msgs.length - 1].createdAt;
+        }
       })
       .catch((error) => {
         console.error(error);
@@ -116,6 +129,37 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
       .finally(() => setLoadingMessages(false));
 
     return () => clearChat();
+  }, [gameId]);
+
+  // Poll for new messages every 3 seconds (works on Vercel without Socket.io)
+  useEffect(() => {
+    const poll = async () => {
+      const since = lastTimestampRef.current;
+      if (!since) return;
+      try {
+        const res = await fetch(
+          `/api/messages/${gameId}?since=${encodeURIComponent(since)}&limit=50`,
+          { cache: "no-store" }
+        );
+        const result = await res.json().catch(() => ({}));
+        if (!result.success) return;
+        const newMsgs: Message[] = (result.data?.messages ?? []).filter(
+          (m: Message) => !seenIdsRef.current.has(m._id)
+        );
+        if (newMsgs.length > 0) {
+          newMsgs.forEach((m) => {
+            seenIdsRef.current.add(m._id);
+            addMessage(m);
+          });
+          lastTimestampRef.current = newMsgs[newMsgs.length - 1].createdAt;
+        }
+      } catch {
+        // silent — next tick will retry
+      }
+    };
+
+    const id = setInterval(poll, 3000);
+    return () => clearInterval(id);
   }, [gameId]);
 
   // Auto-scroll to bottom
@@ -222,13 +266,9 @@ export default function ChatWindow({ gameId, game }: ChatWindowProps) {
       <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700/50 bg-dark-850">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            {isConnected ? (
-              <span className="w-2 h-2 rounded-full bg-accent-green" />
-            ) : (
-              <span className="w-2 h-2 rounded-full bg-dark-500" />
-            )}
+            <span className="w-2 h-2 rounded-full bg-accent-green" />
             <span className="text-xs text-dark-400">
-              {isConnected ? "Connected" : "Connecting..."}
+              {isConnected ? "Live" : "Live"}
             </span>
           </div>
         </div>
