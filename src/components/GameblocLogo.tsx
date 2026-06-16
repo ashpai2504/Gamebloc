@@ -9,11 +9,11 @@ const FALLBACK_SRC = "/images/logo.svg";
 /** Large local PNGs can break the default optimizer; `unoptimized` serves the file as-is. */
 const variantClass = {
   navbar:
-    "h-10 sm:h-11 w-auto max-w-[15rem] sm:max-w-[17rem] object-contain object-left scale-[1.14]",
+    "h-10 sm:h-11 w-auto max-w-[12rem] sm:max-w-[14rem] object-contain object-left",
   auth:
-    "h-13 sm:h-15 w-auto max-w-[19rem] sm:max-w-[21rem] object-contain object-center scale-[1.08] mx-auto",
+    "h-28 sm:h-32 w-auto max-w-[16rem] sm:max-w-[18rem] object-contain object-center mx-auto",
   footer:
-    "h-7 w-auto max-w-[9rem] object-contain object-left mix-blend-multiply scale-[1.06] opacity-95",
+    "h-8 w-auto max-w-[8rem] object-contain object-left opacity-90",
 } as const;
 
 interface GameblocLogoProps {
