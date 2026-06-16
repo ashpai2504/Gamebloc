@@ -24,12 +24,14 @@ export default function AuthModal() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     username: "",
     displayName: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,6 +48,12 @@ export default function AuthModal() {
 
       if (formData.password.length < 6) {
         setError("Password must be at least 6 characters");
+        setIsLoading(false);
+        return;
+      }
+
+      if (mode === "register" && formData.password !== formData.confirmPassword) {
+        setError("Passwords do not match");
         setIsLoading(false);
         return;
       }
@@ -199,6 +207,46 @@ export default function AuthModal() {
               </div>
             </div>
 
+            {/* Confirm Password (register only) */}
+            {mode === "register" && (
+              <div className="animate-slide-down">
+                <label className="block text-xs font-medium text-dark-400 mb-1.5">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={formData.confirmPassword}
+                    onChange={(e) =>
+                      setFormData({ ...formData, confirmPassword: e.target.value })
+                    }
+                    placeholder="Re-enter your password"
+                    required={mode === "register"}
+                    className={`w-full pl-10 pr-12 py-2.5 bg-dark-900 border rounded-xl text-sm text-white placeholder-dark-500 focus:outline-none focus:ring-1 transition-all ${
+                      formData.confirmPassword && formData.password !== formData.confirmPassword
+                        ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/25"
+                        : "border-dark-700/50 focus:border-primary-500/50 focus:ring-primary-500/25"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-500 hover:text-dark-300 transition-colors"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                  <p className="text-[11px] text-red-400 mt-1">Passwords do not match</p>
+                )}
+              </div>
+            )}
+
             {/* Submit */}
             <button
               type="submit"
@@ -263,6 +311,7 @@ export default function AuthModal() {
                     onClick={() => {
                       setMode("register");
                       setError(null);
+                      setShowConfirmPassword(false);
                     }}
                     className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
                   >
@@ -276,6 +325,8 @@ export default function AuthModal() {
                     onClick={() => {
                       setMode("login");
                       setError(null);
+                      setFormData((f) => ({ ...f, confirmPassword: "" }));
+                      setShowConfirmPassword(false);
                     }}
                     className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
                   >
