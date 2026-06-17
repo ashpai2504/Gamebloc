@@ -7,6 +7,7 @@ import MatchList from "@/components/MatchList";
 import LeagueFilter from "@/components/LeagueFilter";
 import TeamSearch from "@/components/TeamSearch";
 import WorldCupBanner from "@/components/WorldCupBanner";
+import HotChats from "@/components/HotChats";
 import LiveTicker from "@/components/LiveTicker";
 import { RefreshCw, Zap, TrendingUp, Globe, Trophy } from "lucide-react";
 import GameblocLogo from "@/components/GameblocLogo";
@@ -214,6 +215,7 @@ export default function HomePage() {
 
       {/* Match Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        {isWcActive && <HotChats games={filteredGames} />}
         <MatchList
           games={filteredGames}
           liveGames={filteredLive}
