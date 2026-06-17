@@ -145,12 +145,20 @@ export const authOptions: NextAuthOptions = {
         const existingUser = await UserModel.findOne({ email: user.email });
 
         if (!existingUser) {
-          const username =
+          // Build a base username from their Google name, then ensure it's unique
+          // (username has a unique index — a collision would otherwise crash signup).
+          const base =
             user.name?.replace(/\s+/g, "").toLowerCase().slice(0, 15) ||
             `user${Date.now()}`;
 
+          let username = base;
+          while (await UserModel.findOne({ username })) {
+            username = `${base.slice(0, 11)}${Math.floor(1000 + Math.random() * 9000)}`;
+          }
+
           await UserModel.create({
             username,
+            displayName: user.name?.trim() || username,
             email: user.email,
             avatar: user.image,
             provider: "google",
